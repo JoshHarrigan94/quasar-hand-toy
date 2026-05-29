@@ -3,12 +3,16 @@ import { CONFIG } from "./config.js";
 import { createParticles } from "./particles.js";
 import { pulseAt } from "./physics.js";
 
+let autoCollapseTimer = null;
+
 export function setMode(nextMode, silent = false) {
   state.mode = nextMode;
 
   document.querySelectorAll("button[data-mode]").forEach((button) => {
     button.classList.toggle("active", button.dataset.mode === state.mode);
   });
+
+  noteUiInteraction();
 
   if (!silent) {
     updateArtifactStatus();
@@ -21,8 +25,6 @@ export function setMode(nextMode, silent = false) {
 }
 
 export function updateArtifactStatus() {
-  if (!state.ui.statusText) return;
-
   const label = state.artifact?.stateLabel || "Dormant";
 
   const copy = {
@@ -34,7 +36,15 @@ export function updateArtifactStatus() {
     Unstable: "Unstable. Gravity waves are moving through it."
   };
 
-  state.ui.statusText.textContent = copy[label] || copy.Dormant;
+  if (state.ui.statusText) {
+    state.ui.statusText.textContent = copy[label] || copy.Dormant;
+  }
+
+  const artifactStateText = document.getElementById("artifactStateText");
+
+  if (artifactStateText) {
+    artifactStateText.textContent = label;
+  }
 }
 
 export function setGesture(text) {
@@ -79,13 +89,14 @@ export function resetField() {
 
   updateArtifactStatus();
   setGesture("Reformed");
+  noteUiInteraction();
 }
 
 export function togglePause() {
   state.paused = !state.paused;
 
   if (state.ui.pauseBtn) {
-    state.ui.pauseBtn.textContent = state.paused ? "Resume" : "Pause";
+    state.ui.pauseBtn.textContent = state.paused ? "Resume" : "Suspend";
   }
 
   if (state.ui.statusText) {
@@ -94,18 +105,55 @@ export function togglePause() {
   }
 
   setGesture(state.paused ? "Suspended" : "Resumed");
+  noteUiInteraction();
 }
 
-export function toggleInterface() {
+export function collapseInterface() {
   const shell = document.getElementById("interfaceShell");
   const toggle = document.getElementById("uiToggle");
 
   if (!shell || !toggle) return;
 
-  const collapsed = shell.classList.toggle("collapsed");
+  shell.classList.add("collapsed");
+  toggle.textContent = "Open";
+  toggle.setAttribute("aria-expanded", "false");
+}
 
-  toggle.textContent = collapsed ? "Open" : "Observatory";
-  toggle.setAttribute("aria-expanded", String(!collapsed));
+export function openInterface() {
+  const shell = document.getElementById("interfaceShell");
+  const toggle = document.getElementById("uiToggle");
+
+  if (!shell || !toggle) return;
+
+  shell.classList.remove("collapsed");
+  toggle.textContent = "Observatory";
+  toggle.setAttribute("aria-expanded", "true");
+
+  scheduleAutoCollapse();
+}
+
+export function toggleInterface() {
+  const shell = document.getElementById("interfaceShell");
+
+  if (!shell) return;
+
+  if (shell.classList.contains("collapsed")) {
+    openInterface();
+  } else {
+    collapseInterface();
+  }
+}
+
+export function scheduleAutoCollapse() {
+  clearTimeout(autoCollapseTimer);
+
+  autoCollapseTimer = setTimeout(() => {
+    collapseInterface();
+  }, 10000);
+}
+
+export function noteUiInteraction() {
+  scheduleAutoCollapse();
 }
 
 export function markHandTrackingActive(message = "Searching for hand...") {
@@ -122,6 +170,8 @@ export function markHandTrackingActive(message = "Searching for hand...") {
     state.ui.handStatus.textContent = message;
     state.ui.handStatus.classList.remove("active");
   }
+
+  noteUiInteraction();
 }
 
 export function markHandDetected(message = "Hand detected") {
@@ -141,10 +191,7 @@ export function markHandLost() {
 }
 
 export function initialiseUiText() {
-  if (state.ui.statusText) {
-    state.ui.statusText.textContent =
-      "Dormant. Suspended in the void.";
-  }
+  updateArtifactStatus();
 
   if (state.ui.gestureText) {
     state.ui.gestureText.textContent = state.lastGesture;
@@ -157,9 +204,12 @@ export function initialiseUiText() {
   }
 
   const toggle = document.getElementById("uiToggle");
+
   if (toggle) {
     toggle.setAttribute("aria-expanded", "true");
   }
+
+  scheduleAutoCollapse();
 }
 
 export function bindUiControls({ onCameraStart } = {}) {
@@ -167,6 +217,7 @@ export function bindUiControls({ onCameraStart } = {}) {
     button.addEventListener("click", () => {
       setMode(button.dataset.mode);
       setGesture(`${button.textContent} influence`);
+      noteUiInteraction();
     });
   });
 
@@ -179,12 +230,24 @@ export function bindUiControls({ onCameraStart } = {}) {
   }
 
   if (state.ui.cameraBtn && onCameraStart) {
-    state.ui.cameraBtn.addEventListener("click", onCameraStart);
+    state.ui.cameraBtn.addEventListener("click", () => {
+      onCameraStart();
+      noteUiInteraction();
+    });
   }
 
   const uiToggle = document.getElementById("uiToggle");
 
   if (uiToggle) {
-    uiToggle.addEventListener("click", toggleInterface);
+    uiToggle.addEventListener("click", () => {
+      toggleInterface();
+    });
+  }
+
+  const shell = document.getElementById("interfaceShell");
+
+  if (shell) {
+    shell.addEventListener("pointerdown", noteUiInteraction);
+    shell.addEventListener("mousemove", noteUiInteraction);
   }
 }
