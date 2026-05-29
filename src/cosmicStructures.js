@@ -15,75 +15,75 @@ export function getCosmicStructures() {
   const unit = Math.min(state.width, state.height);
 
   return [
-    {
-      id: "central-star",
-      type: STRUCTURE_TYPES.STAR,
-      x: cx,
-      y: cy,
-      radius: unit * 0.055,
-      gravity: 0.032,
-      orbitStrength: 0.028,
-      particleShare: 0.1
-    },
+  {
+    id: "central-star",
+    type: STRUCTURE_TYPES.STAR,
+    x: cx,
+    y: cy,
+    radius: unit * 0.075,
+    gravity: 0.065,
+    orbitStrength: 0.04,
+    particleShare: 0.14
+  },
 
-    {
-      id: "inner-planet",
-      type: STRUCTURE_TYPES.PLANET,
-      x: cx + unit * 0.18,
-      y: cy - unit * 0.04,
-      radius: unit * 0.035,
-      gravity: 0.018,
-      orbitStrength: 0.018,
-      particleShare: 0.08
-    },
+  {
+    id: "inner-planet",
+    type: STRUCTURE_TYPES.PLANET,
+    x: cx + unit * 0.22,
+    y: cy - unit * 0.05,
+    radius: unit * 0.05,
+    gravity: 0.03,
+    orbitStrength: 0.025,
+    particleShare: 0.10
+  },
 
-    {
-      id: "outer-planet",
-      type: STRUCTURE_TYPES.PLANET,
-      x: cx - unit * 0.28,
-      y: cy + unit * 0.08,
-      radius: unit * 0.052,
-      gravity: 0.02,
-      orbitStrength: 0.016,
-      particleShare: 0.11
-    },
+  {
+    id: "outer-planet",
+    type: STRUCTURE_TYPES.PLANET,
+    x: cx - unit * 0.34,
+    y: cy + unit * 0.09,
+    radius: unit * 0.08,
+    gravity: 0.04,
+    orbitStrength: 0.028,
+    particleShare: 0.16
+  },
 
-    {
-      id: "moon",
-      type: STRUCTURE_TYPES.MOON,
-      parentId: "outer-planet",
-      offsetX: unit * 0.085,
-      offsetY: -unit * 0.035,
-      radius: unit * 0.018,
-      gravity: 0.012,
-      orbitStrength: 0.014,
-      particleShare: 0.04
-    },
+  {
+    id: "moon",
+    type: STRUCTURE_TYPES.MOON,
+    parentId: "outer-planet",
+    offsetX: unit * 0.12,
+    offsetY: -unit * 0.05,
+    radius: unit * 0.03,
+    gravity: 0.02,
+    orbitStrength: 0.018,
+    particleShare: 0.05
+  },
 
-    {
-      id: "asteroid-belt",
-      type: STRUCTURE_TYPES.ASTEROID_BELT,
-      x: cx,
-      y: cy,
-      innerRadius: unit * 0.31,
-      outerRadius: unit * 0.39,
-      gravity: 0.006,
-      orbitStrength: 0.018,
-      particleShare: 0.22
-    },
+  {
+    id: "asteroid-belt",
+    type: STRUCTURE_TYPES.ASTEROID_BELT,
+    x: cx,
+    y: cy,
+    innerRadius: unit * 0.42,
+    outerRadius: unit * 0.54,
+    gravity: 0.01,
+    orbitStrength: 0.03,
+    particleShare: 0.25
+  },
 
-    {
-      id: "ring-system",
-      type: STRUCTURE_TYPES.RING_SYSTEM,
-      parentId: "outer-planet",
-      innerRadius: unit * 0.07,
-      outerRadius: unit * 0.115,
-      tilt: -0.42,
-      gravity: 0.009,
-      orbitStrength: 0.02,
-      particleShare: 0.14
-    }
-  ];
+  {
+    id: "ring-system",
+    type: STRUCTURE_TYPES.RING_SYSTEM,
+    parentId: "outer-planet",
+    innerRadius: unit * 0.10,
+    outerRadius: unit * 0.18,
+    tilt: -0.42,
+    gravity: 0.015,
+    orbitStrength: 0.03,
+    particleShare: 0.18
+  }
+];
 }
 
 export function resolveStructurePosition(structure, structures = getCosmicStructures()) {
