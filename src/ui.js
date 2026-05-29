@@ -115,8 +115,9 @@ export function collapseInterface() {
   if (!shell || !toggle) return;
 
   shell.classList.add("collapsed");
-  toggle.textContent = "Open";
-  toggle.setAttribute("aria-expanded", "false");
+state.interface.collapsed = true;
+toggle.textContent = "Open";
+toggle.setAttribute("aria-expanded", "false");
 }
 
 export function openInterface() {
@@ -126,8 +127,9 @@ export function openInterface() {
   if (!shell || !toggle) return;
 
   shell.classList.remove("collapsed");
-  toggle.textContent = "Observatory";
-  toggle.setAttribute("aria-expanded", "true");
+state.interface.collapsed = false;
+toggle.textContent = "Observatory";
+toggle.setAttribute("aria-expanded", "true");
 
   scheduleAutoCollapse();
 }
@@ -148,11 +150,12 @@ export function scheduleAutoCollapse() {
   clearTimeout(autoCollapseTimer);
 
   autoCollapseTimer = setTimeout(() => {
-    collapseInterface();
-  }, 10000);
+  collapseInterface();
+}, state.interface.autoCollapseMs);
 }
 
 export function noteUiInteraction() {
+  state.interface.lastInteractionAt = Date.now();
   scheduleAutoCollapse();
 }
 
