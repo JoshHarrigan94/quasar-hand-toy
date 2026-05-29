@@ -28,6 +28,16 @@ export const state = {
     stateLabel: "Dormant"
   },
 
+  presence: {
+    breath: 0,
+    breathPhase: 0,
+    stillness: 0,
+    presencePulse: 0,
+    lastPresenceEventAt: 0,
+    lastInteractionAt: 0,
+    revealing: false
+  },
+
   interface: {
     collapsed: false,
     lastInteractionAt: 0,
