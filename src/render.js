@@ -1,6 +1,11 @@
 import { state } from "./state.js";
 import { CONFIG } from "./config.js";
 import { getTheme } from "./themes.js";
+import {
+  getCosmicStructures,
+  resolveStructurePosition,
+  STRUCTURE_TYPES
+} from "./cosmicStructures.js";
 
 export function clearCanvas() {
   const ctx = state.ctx;
@@ -16,7 +21,6 @@ export function drawCore() {
 
   const cx = state.width / 2;
   const cy = state.height / 2;
-
   const radius = Math.min(state.width, state.height) * 0.27;
 
   const gradient = ctx.createRadialGradient(cx, cy, 0, cx, cy, radius);
@@ -32,12 +36,106 @@ export function drawCore() {
   ctx.fill();
 }
 
+export function drawCosmicStructureGuides() {
+  const ctx = state.ctx;
+  const structures = getCosmicStructures();
+
+  ctx.save();
+  ctx.globalCompositeOperation = "lighter";
+
+  for (const structure of structures) {
+    const position = resolveStructurePosition(structure, structures);
+
+    if (structure.type === STRUCTURE_TYPES.STAR) {
+      drawSoftOrb(position.x, position.y, structure.radius * 2.3, "rgba(255,255,255,0.16)");
+    }
+
+    if (structure.type === STRUCTURE_TYPES.PLANET) {
+      drawSoftOrb(position.x, position.y, structure.radius * 2, "rgba(125,211,252,0.11)");
+      drawOrbitLine(position.x, position.y, structure.radius * 2.6, 0.38, "rgba(125,211,252,0.08)");
+    }
+
+    if (structure.type === STRUCTURE_TYPES.MOON) {
+      drawSoftOrb(position.x, position.y, structure.radius * 1.8, "rgba(226,232,240,0.08)");
+    }
+
+    if (structure.type === STRUCTURE_TYPES.ASTEROID_BELT) {
+      drawOrbitLine(position.x, position.y, structure.innerRadius, 0.48, "rgba(255,255,255,0.035)");
+      drawOrbitLine(position.x, position.y, structure.outerRadius, 0.48, "rgba(255,255,255,0.045)");
+    }
+
+    if (structure.type === STRUCTURE_TYPES.RING_SYSTEM) {
+      const parent = structures.find((item) => item.id === structure.parentId);
+      if (!parent) continue;
+
+      const parentPosition = resolveStructurePosition(parent, structures);
+
+      drawTiltedRing(
+        parentPosition.x,
+        parentPosition.y,
+        structure.innerRadius,
+        structure.outerRadius,
+        structure.tilt || 0,
+        "rgba(255,255,255,0.08)"
+      );
+    }
+  }
+
+  ctx.restore();
+}
+
+function drawSoftOrb(x, y, radius, colour) {
+  const ctx = state.ctx;
+
+  const gradient = ctx.createRadialGradient(x, y, 0, x, y, radius);
+  gradient.addColorStop(0, colour);
+  gradient.addColorStop(1, "rgba(0,0,0,0)");
+
+  ctx.fillStyle = gradient;
+  ctx.beginPath();
+  ctx.arc(x, y, radius, 0, Math.PI * 2);
+  ctx.fill();
+}
+
+function drawOrbitLine(x, y, radius, compression, colour) {
+  const ctx = state.ctx;
+
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.scale(1, compression);
+
+  ctx.beginPath();
+  ctx.strokeStyle = colour;
+  ctx.lineWidth = 1;
+  ctx.arc(0, 0, radius, 0, Math.PI * 2);
+  ctx.stroke();
+
+  ctx.restore();
+}
+
+function drawTiltedRing(x, y, innerRadius, outerRadius, tilt, colour) {
+  const ctx = state.ctx;
+  const midRadius = (innerRadius + outerRadius) / 2;
+
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.rotate(tilt);
+  ctx.scale(1, 0.24);
+
+  ctx.beginPath();
+  ctx.strokeStyle = colour;
+  ctx.lineWidth = Math.max(1, outerRadius - innerRadius);
+  ctx.arc(0, 0, midRadius, 0, Math.PI * 2);
+  ctx.stroke();
+
+  ctx.restore();
+}
+
 export function drawParticle(particle) {
   const ctx = state.ctx;
 
   const dx = particle.x - state.width / 2;
   const dy = particle.y - state.height / 2;
-
   const dist = Math.hypot(dx, dy);
 
   const glow = Math.max(
@@ -45,21 +143,41 @@ export function drawParticle(particle) {
     1 - dist / (Math.min(state.width, state.height) * 0.58)
   );
 
-  const speed = Math.min(
-    1,
-    Math.hypot(particle.vx, particle.vy) / 12
-  );
-
+  const speed = Math.min(1, Math.hypot(particle.vx, particle.vy) / 12);
   const twinkle = 0.75 + Math.sin(particle.pulse) * 0.25;
+
+  let structureBoost = 0;
+  let sizeBoost = 1;
+
+  if (particle.structureId) {
+    structureBoost = 22;
+    sizeBoost = 1.12;
+  }
+
+  if (particle.structureId === "central-star") {
+    structureBoost = 48;
+    sizeBoost = 1.45;
+  }
+
+  if (particle.structureId === "ring-system") {
+    structureBoost = 12;
+    sizeBoost = 0.9;
+  }
+
+  if (particle.structureId === "asteroid-belt") {
+    structureBoost = -18;
+    sizeBoost = 0.78;
+  }
 
   const particleHue =
     state.hue +
     particle.depth * 70 +
     glow * 60 +
-    speed * 40;
+    speed * 40 +
+    structureBoost;
 
   const alpha =
-    (0.16 +
+    (0.14 +
       particle.depth * 0.35 +
       glow * 0.35 +
       speed * 0.18) *
@@ -74,7 +192,7 @@ export function drawParticle(particle) {
   ctx.arc(
     particle.x,
     particle.y,
-    particle.size * particle.depth * (particle.spark ? 2 : 1),
+    particle.size * particle.depth * sizeBoost * (particle.spark ? 2 : 1),
     0,
     Math.PI * 2
   );
@@ -84,19 +202,11 @@ export function drawParticle(particle) {
   if (speed > 0.45 || particle.spark) {
     ctx.beginPath();
 
-    ctx.strokeStyle = `hsla(${particleHue}, 100%, 75%, ${
-      alpha * 0.38
-    })`;
-
+    ctx.strokeStyle = `hsla(${particleHue}, 100%, 75%, ${alpha * 0.38})`;
     ctx.lineWidth = particle.size * 0.55;
 
     ctx.moveTo(particle.x, particle.y);
-
-    ctx.lineTo(
-      particle.x - particle.vx * 2.4,
-      particle.y - particle.vy * 2.4
-    );
-
+    ctx.lineTo(particle.x - particle.vx * 2.4, particle.y - particle.vy * 2.4);
     ctx.stroke();
   }
 }
@@ -140,15 +250,7 @@ export function drawPointerGlow() {
       : "rgba(255,255,255,0.45)";
 
     ctx.lineWidth = pointer.down ? 2.5 : 1.5;
-
-    ctx.arc(
-      pointer.x,
-      pointer.y,
-      pointer.down ? 18 : 12,
-      0,
-      Math.PI * 2
-    );
-
+    ctx.arc(pointer.x, pointer.y, pointer.down ? 18 : 12, 0, Math.PI * 2);
     ctx.stroke();
   }
 }
@@ -191,14 +293,8 @@ export function drawComets() {
     })`;
 
     ctx.lineWidth = 2;
-
     ctx.moveTo(comet.x, comet.y);
-
-    ctx.lineTo(
-      comet.x - comet.vx * 10,
-      comet.y - comet.vy * 10
-    );
-
+    ctx.lineTo(comet.x - comet.vx * 10, comet.y - comet.vy * 10);
     ctx.stroke();
 
     if (
@@ -218,6 +314,7 @@ export function renderFrame() {
   clearCanvas();
 
   drawCore();
+  drawCosmicStructureGuides();
   drawPointerGlow();
   drawShockwaves();
   drawComets();
