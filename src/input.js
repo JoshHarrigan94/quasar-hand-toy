@@ -27,14 +27,14 @@ export function bindInputControls() {
   window.addEventListener("mousemove", (event) => {
     if (state.pointer.source === "hand" && state.cameraActive) return;
 
-    setGesture("Mouse guide");
+    setGesture("Guiding");
     updatePointer(event.clientX, event.clientY, "mouse");
   });
 
   window.addEventListener("mousedown", (event) => {
     if (state.pointer.source === "hand" && state.cameraActive) return;
 
-    setGesture("Mouse pull");
+    setGesture("Collapsing matter");
     state.pointer.down = true;
 
     updatePointer(event.clientX, event.clientY, "mouse");
@@ -55,8 +55,8 @@ export function bindInputControls() {
   });
 
   window.addEventListener("dblclick", (event) => {
-    setGesture("Explosion");
-    explode(event.clientX, event.clientY, 18);
+    setGesture("Pulse wave");
+    explode(event.clientX, event.clientY, 14);
   });
 
   window.addEventListener(
@@ -69,14 +69,14 @@ export function bindInputControls() {
 
       const now = Date.now();
 
-      setGesture("Touch pull");
+      setGesture("Touching the field");
       updatePointer(touch.clientX, touch.clientY, "touch");
 
       state.pointer.down = true;
 
       if (now - state.lastTap < 280) {
-        setGesture("Touch explosion");
-        explode(touch.clientX, touch.clientY, 18);
+        setGesture("Pulse wave");
+        explode(touch.clientX, touch.clientY, 14);
       }
 
       state.lastTap = now;
@@ -112,16 +112,25 @@ export function bindInputControls() {
     if (event.key === "5") setMode("storm");
 
     if (event.key === " ") {
-      setGesture("Explosion");
-      explode(state.pointer.x || state.width / 2, state.pointer.y || state.height / 2, 18);
+      setGesture("Pulse wave");
+      explode(
+        state.pointer.x || state.width / 2,
+        state.pointer.y || state.height / 2,
+        14
+      );
     }
 
     if (event.key.toLowerCase() === "i") {
-      setGesture("Implosion");
-      implode(state.pointer.x || state.width / 2, state.pointer.y || state.height / 2, 12);
+      setGesture("Deep collapse");
+      implode(
+        state.pointer.x || state.width / 2,
+        state.pointer.y || state.height / 2,
+        12
+      );
     }
 
     if (event.key.toLowerCase() === "r") {
+      setGesture("Reforming");
       resetField();
     }
   });
