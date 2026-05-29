@@ -1,6 +1,5 @@
 import { state } from "./state.js";
 import { CONFIG } from "./config.js";
-import { THEMES } from "./themes.js";
 import { createParticles } from "./particles.js";
 import { pulseAt } from "./physics.js";
 
@@ -13,15 +12,21 @@ export function setMode(nextMode, silent = false) {
 
   if (!silent) {
     const labels = {
-      pull: "Gravity well engaged.",
-      push: "Repulsion field active.",
-      spin: "Orbital torque online.",
-      storm: "Storm field unstable.",
-      calm: "Stabilising particle flow."
+      pull: "Collapse field engaged.",
+      push: "Expansion field active.",
+      spin: "Rotational influence online.",
+      storm: "Gravity wave disturbance.",
+      calm: "Stillness field stabilising."
     };
 
-    state.ui.statusText.textContent = labels[state.mode] || "Bend the galaxy.";
-    pulseAt(state.pointer.x || state.width / 2, state.pointer.y || state.height / 2, 0.7);
+    state.ui.statusText.textContent =
+      labels[state.mode] || "The artifact responds.";
+
+    pulseAt(
+      state.pointer.x || state.width / 2,
+      state.pointer.y || state.height / 2,
+      0.7
+    );
   }
 }
 
@@ -33,20 +38,6 @@ export function setGesture(text) {
   if (state.ui.gestureText) {
     state.ui.gestureText.textContent = text;
   }
-}
-
-export function setTheme(nextTheme) {
-  state.theme = nextTheme;
-  state.hue = THEMES[state.theme]?.baseHue || THEMES.quasar.baseHue;
-
-  document.querySelectorAll("button[data-theme]").forEach((button) => {
-    button.classList.toggle("active", button.dataset.theme === state.theme);
-  });
-
-  state.ui.statusText.textContent =
-    `${THEMES[state.theme]?.name || "Quasar"} field loaded.`;
-
-  pulseAt(state.width / 2, state.height / 2, 1);
 }
 
 export function updateEnergyUI() {
@@ -69,7 +60,7 @@ export function resetField() {
   pulseAt(state.width / 2, state.height / 2, 1.2);
 
   if (state.ui.statusText) {
-    state.ui.statusText.textContent = "Particle field reset.";
+    state.ui.statusText.textContent = "The field reforms.";
   }
 
   setGesture("Reset field");
@@ -84,10 +75,22 @@ export function togglePause() {
 
   if (state.ui.statusText) {
     state.ui.statusText.textContent =
-      state.paused ? "Simulation paused." : "Simulation resumed.";
+      state.paused ? "The artifact is held still." : "The artifact resumes.";
   }
 
   setGesture(state.paused ? "Paused" : "Resumed");
+}
+
+export function toggleInterface() {
+  const shell = document.getElementById("interfaceShell");
+  const toggle = document.getElementById("uiToggle");
+
+  if (!shell || !toggle) return;
+
+  const collapsed = shell.classList.toggle("collapsed");
+
+  toggle.textContent = collapsed ? "Open" : "Observatory";
+  toggle.setAttribute("aria-expanded", String(!collapsed));
 }
 
 export function markHandTrackingActive(message = "Searching for hand...") {
@@ -124,7 +127,8 @@ export function markHandLost() {
 
 export function initialiseUiText() {
   if (state.ui.statusText) {
-    state.ui.statusText.textContent = "Engine Initialised";
+    state.ui.statusText.textContent =
+      "An impossible object suspended in the void.";
   }
 
   if (state.ui.gestureText) {
@@ -136,19 +140,26 @@ export function initialiseUiText() {
   if (state.ui.handStatus) {
     state.ui.handStatus.textContent = "Hand tracking off";
   }
+
+  const toggle = document.getElementById("uiToggle");
+  if (toggle) {
+    toggle.setAttribute("aria-expanded", "true");
+  }
 }
 
 export function bindUiControls({ onCameraStart } = {}) {
   document.querySelectorAll("button[data-mode]").forEach((button) => {
     button.addEventListener("click", () => {
-      setMode(button.dataset.mode);
-      setGesture(`${button.textContent} mode`);
-    });
-  });
+      const modeMap = {
+        Collapse: "pull",
+        Expand: "push",
+        Rotate: "spin",
+        Disturb: "storm",
+        Stillness: "calm"
+      };
 
-  document.querySelectorAll("button[data-theme]").forEach((button) => {
-    button.addEventListener("click", () => {
-      setTheme(button.dataset.theme);
+      setMode(button.dataset.mode);
+      setGesture(`${button.textContent} influence`);
     });
   });
 
@@ -162,5 +173,11 @@ export function bindUiControls({ onCameraStart } = {}) {
 
   if (state.ui.cameraBtn && onCameraStart) {
     state.ui.cameraBtn.addEventListener("click", onCameraStart);
+  }
+
+  const uiToggle = document.getElementById("uiToggle");
+
+  if (uiToggle) {
+    uiToggle.addEventListener("click", toggleInterface);
   }
 }
