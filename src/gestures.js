@@ -61,22 +61,22 @@ export function interpretHandGesture(landmarks, mappedX, mappedY) {
   ) {
     state.handState.lastSwipeAt = Date.now();
 
-    setGesture("Fast swipe");
+    setGesture("Gravity wave");
     setMode("storm", true);
 
     fling();
-    pulseAt(mappedX, mappedY, 1);
+    pulseAt(mappedX, mappedY, 1.1);
 
-    return "swipe";
+    return "gravity wave";
   }
 
   if (isPinching) {
-    setGesture("Pinch / Grab");
+    setGesture("Collapse");
     setMode("pull", true);
 
     state.pointer.down = true;
 
-    return "pinch";
+    return "collapse";
   }
 
   if (
@@ -85,36 +85,36 @@ export function interpretHandGesture(landmarks, mappedX, mappedY) {
   ) {
     state.handState.lastAutoPowerAt = Date.now();
 
-    setGesture("Fist / Smash");
+    setGesture("Rupture");
 
-    explode(mappedX, mappedY, 16);
+    explode(mappedX, mappedY, 14);
 
     state.pointer.down = false;
 
-    return "fist";
+    return "rupture";
   }
 
   if (state.handState.stillFrames > CONFIG.gestures.stillFrames) {
-    setGesture("Still / Calm");
+    setGesture("Stillness");
     setMode("calm", true);
 
     state.pointer.down = false;
 
-    return "still";
+    return "stillness";
   }
 
   if (isOpenHand) {
-    setGesture("Open hand / Push");
+    setGesture("Expansion");
     setMode("push", true);
 
     state.pointer.down = false;
 
-    return "open";
+    return "expansion";
   }
 
-  setGesture("Point / Guide");
+  setGesture("Presence");
 
   state.pointer.down = false;
 
-  return "point";
+  return "presence";
 }
