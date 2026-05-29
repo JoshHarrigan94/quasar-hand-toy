@@ -14,8 +14,41 @@ export function pulseAt(x, y, strength = 1) {
     y,
     radius: 8,
     alpha: 0.55 * strength,
-    speed: 9 + strength * 8
+    speed: 9 + strength * 8,
+    type: "pulse"
   });
+}
+
+export function gravityWaveAt(x, y, strength = 1) {
+  state.shockwaves.push({
+    x,
+    y,
+    radius: 12,
+    alpha: 0.72 * strength,
+    speed: 15 + strength * 10,
+    type: "gravity-wave"
+  });
+
+  for (const particle of state.particles) {
+    const dx = particle.x - x;
+    const dy = particle.y - y;
+    const dist = Math.hypot(dx, dy) || 1;
+
+    const waveRadius = Math.min(state.width, state.height) * 0.42;
+    if (dist > waveRadius) continue;
+
+    const influence = 1 - dist / waveRadius;
+    const nx = dx / dist;
+    const ny = dy / dist;
+    const tx = -ny;
+    const ty = nx;
+
+    particle.vx += nx * influence * strength * 3.2 * particle.depth;
+    particle.vy += ny * influence * strength * 3.2 * particle.depth;
+
+    particle.vx += tx * influence * strength * 1.8;
+    particle.vy += ty * influence * strength * 1.8;
+  }
 }
 
 export function spendEnergy(amount) {
@@ -31,37 +64,37 @@ export function recoverEnergy() {
   state.energy = Math.min(CONFIG.energy.max, state.energy + rate);
 }
 
-export function explode(x = state.width / 2, y = state.height / 2, power = 16) {
+export function explode(x = state.width / 2, y = state.height / 2, power = 14) {
   if (state.energy < CONFIG.energy.explodeCost) return;
 
   spendEnergy(CONFIG.energy.explodeCost);
-  pulseAt(x, y, 1.4);
+  gravityWaveAt(x, y, 1.05);
 
   for (const particle of state.particles) {
     const dx = particle.x - x;
     const dy = particle.y - y;
     const dist = Math.hypot(dx, dy) || 1;
-    const force = Math.min(power, 1100 / dist);
+    const force = Math.min(power, 900 / dist);
 
-    particle.vx += (dx / dist) * force * (0.7 + particle.depth);
-    particle.vy += (dy / dist) * force * (0.7 + particle.depth);
+    particle.vx += (dx / dist) * force * (0.55 + particle.depth);
+    particle.vy += (dy / dist) * force * (0.55 + particle.depth);
   }
 }
 
-export function implode(x = state.width / 2, y = state.height / 2, power = 11) {
+export function implode(x = state.width / 2, y = state.height / 2, power = 12) {
   if (state.energy < CONFIG.energy.implodeCost) return;
 
   spendEnergy(CONFIG.energy.implodeCost);
-  pulseAt(x, y, 1);
+  pulseAt(x, y, 0.9);
 
   for (const particle of state.particles) {
     const dx = x - particle.x;
     const dy = y - particle.y;
     const dist = Math.hypot(dx, dy) || 1;
-    const force = Math.min(power, 850 / dist);
+    const force = Math.min(power, 780 / dist);
 
-    particle.vx += (dx / dist) * force * (0.5 + particle.depth);
-    particle.vy += (dy / dist) * force * (0.5 + particle.depth);
+    particle.vx += (dx / dist) * force * (0.42 + particle.depth);
+    particle.vy += (dy / dist) * force * (0.42 + particle.depth);
   }
 }
 
@@ -72,7 +105,7 @@ export function fling() {
   if (speed < 12 || state.energy < CONFIG.energy.flingCost) return;
 
   spendEnergy(CONFIG.energy.flingCost);
-  pulseAt(pointer.x, pointer.y, 1);
+  gravityWaveAt(pointer.x, pointer.y, Math.min(1.4, speed / 34));
 
   for (const particle of state.particles) {
     const dx = pointer.x - particle.x;
@@ -82,8 +115,8 @@ export function fling() {
     if (dist < CONFIG.physics.flingRadius) {
       const influence = 1 - dist / CONFIG.physics.flingRadius;
 
-      particle.vx += pointer.vx * 0.05 * influence;
-      particle.vy += pointer.vy * 0.05 * influence;
+      particle.vx += pointer.vx * 0.042 * influence;
+      particle.vy += pointer.vy * 0.042 * influence;
     }
   }
 }
@@ -164,13 +197,13 @@ function applyStructurePhysics(particle, index) {
   const tx = -ny;
   const ty = nx;
 
-  const pull = target.gravity * particle.structurePull * particle.depth * 0.25;
+  const pull = target.gravity * particle.structurePull * particle.depth * 0.22;
 
   particle.vx += nx * pull;
   particle.vy += ny * pull;
 
-  particle.vx += tx * target.orbitStrength * particle.depth * 0.16;
-  particle.vy += ty * target.orbitStrength * particle.depth * 0.16;
+  particle.vx += tx * target.orbitStrength * particle.depth * 0.14;
+  particle.vy += ty * target.orbitStrength * particle.depth * 0.14;
 }
 
 function applyMassAnchorPhysics(particle) {
@@ -199,14 +232,14 @@ function applyMassAnchorPhysics(particle) {
       influence *
       influence *
       anchor.mass *
-      0.006 *
+      0.005 *
       particle.depth;
 
     particle.vx += nx * massPull;
     particle.vy += ny * massPull;
 
-    particle.vx += tx * anchor.orbitStrength * influence * 0.22;
-    particle.vy += ty * anchor.orbitStrength * influence * 0.22;
+    particle.vx += tx * anchor.orbitStrength * influence * 0.18;
+    particle.vy += ty * anchor.orbitStrength * influence * 0.18;
 
     if (anchor.type === STRUCTURE_TYPES.BLACK_HOLE && dist < anchor.radius * 1.6) {
       particle.vx *= 0.7;
