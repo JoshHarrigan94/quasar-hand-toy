@@ -1,6 +1,7 @@
 import { state } from "./state.js";
 import { CONFIG } from "./config.js";
 import { createParticles } from "./particles.js";
+import { renderFrame, advanceHue } from "./render.js";
 
 function cacheDomElements() {
   state.ui.statusText = document.getElementById("statusText");
