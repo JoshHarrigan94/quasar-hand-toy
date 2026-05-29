@@ -53,35 +53,13 @@ function resizeCanvas() {
   );
 }
 
-function initialiseUi() {
-  if (state.ui.statusText) {
-    state.ui.statusText.textContent = "Engine Initialised";
-  }
-
-  if (state.ui.gestureText) {
-    state.ui.gestureText.textContent = "Waiting";
-  }
-
-  if (state.ui.energyText) {
-    state.ui.energyText.textContent = "100%";
-  }
-
-  if (state.ui.energyFill) {
-    state.ui.energyFill.style.width = "100%";
-  }
-
-  if (state.ui.handStatus) {
-    state.ui.handStatus.textContent = "Hand tracking off";
-  }
-}
-
 function loop() {
   if (!state.paused) {
     advanceHue();
-updatePhysics();
-updateEnergyUI();
-checkHandLost();
-renderFrame();
+    updatePhysics();
+    updateEnergyUI();
+    checkHandLost();
+    renderFrame();
   }
 
   requestAnimationFrame(loop);
@@ -89,26 +67,23 @@ renderFrame();
 
 function startApplication() {
   cacheDomElements();
-
   setupCanvas();
-
-  resizeCanvas();
-
-createParticles();
-
-initialiseUiText();
-bindUiControls({ onCameraStart: startCamera });
-bindInputControls();
-
-  console.log("🚀 Quasar Engine Started");
-console.log(state);
-
-loop();
-
-window.addEventListener("resize", () => {
   resizeCanvas();
   createParticles();
-});
+
+  initialiseUiText();
+  bindUiControls({ onCameraStart: startCamera });
+  bindInputControls();
+
+  console.log("∞ Infinity Core Started");
+  console.log(state);
+
+  loop();
+
+  window.addEventListener("resize", () => {
+    resizeCanvas();
+    createParticles();
+  });
 }
 
 startApplication();
