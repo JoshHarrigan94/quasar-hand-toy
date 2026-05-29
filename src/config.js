@@ -16,6 +16,16 @@ export const CONFIG = {
     flingRadius: 340
   },
 
+  artifact: {
+    awakeDecay: 0.996,
+    pulseDecay: 0.94,
+    disturbanceDecay: 0.985,
+    pressureDecay: 0.982,
+    opennessDecay: 0.985,
+    calmDecayMultiplier: 0.97,
+    sleepDelayMs: 1800
+  },
+
   structures: {
     enabled: true,
     structurePullMultiplier: 0.72,
