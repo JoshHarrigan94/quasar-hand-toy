@@ -1,1 +1,78 @@
+import { THEMES } from "./themes.js";
 
+export const state = {
+  canvas: null,
+  ctx: null,
+
+  width: 0,
+  height: 0,
+  dpr: 1,
+
+  paused: false,
+
+  hue: THEMES.quasar.baseHue,
+
+  theme: "quasar",
+  mode: "pull",
+
+  energy: 100,
+
+  particles: [],
+  shockwaves: [],
+  comets: [],
+
+  cameraActive: false,
+  handSeenAt: 0,
+
+  lastTap: 0,
+  lastGesture: "Touch / Mouse",
+
+  pointer: {
+    x: 0,
+    y: 0,
+
+    prevX: 0,
+    prevY: 0,
+
+    vx: 0,
+    vy: 0,
+
+    active: false,
+    down: false,
+
+    source: "touch"
+  },
+
+  handState: {
+    previousX: 0,
+    previousY: 0,
+
+    speed: 0,
+
+    stillFrames: 0,
+
+    lastSwipeAt: 0,
+    lastAutoPowerAt: 0
+  },
+
+  ui: {
+    statusText: null,
+    gestureText: null,
+
+    energyText: null,
+    energyFill: null,
+
+    handStatus: null,
+
+    cameraBtn: null,
+    pauseBtn: null,
+    resetBtn: null,
+
+    cameraFeed: null
+  },
+
+  mediaPipe: {
+    hands: null,
+    camera: null
+  }
+};
