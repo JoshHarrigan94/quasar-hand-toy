@@ -1,15 +1,26 @@
 const canvas = document.getElementById("quasarCanvas");
 const ctx = canvas.getContext("2d");
 
+const statusText = document.getElementById("statusText");
+const energyText = document.getElementById("energyText");
+const energyFill = document.getElementById("energyFill");
+const resetBtn = document.getElementById("resetBtn");
+const pauseBtn = document.getElementById("pauseBtn");
+
 let width = 0;
 let height = 0;
 let dpr = Math.min(window.devicePixelRatio || 1, 2);
 
 let particles = [];
 let shockwaves = [];
+let comets = [];
+
 let mode = "pull";
+let theme = "quasar";
 let hue = 190;
 let lastTap = 0;
+let paused = false;
+let energy = 100;
 
 const pointer = {
   x: 0,
@@ -19,16 +30,46 @@ const pointer = {
   vx: 0,
   vy: 0,
   active: false,
-  down: false,
-  strength: 0
+  down: false
+};
+
+const themes = {
+  quasar: {
+    baseHue: 190,
+    coreA: "rgba(255,255,255,0.95)",
+    coreB: "rgba(125,211,252,0.45)",
+    coreC: "rgba(168,85,247,0.16)",
+    bg: "rgba(2, 6, 23, 0.15)"
+  },
+  ember: {
+    baseHue: 24,
+    coreA: "rgba(255,255,255,0.92)",
+    coreB: "rgba(251,146,60,0.52)",
+    coreC: "rgba(239,68,68,0.17)",
+    bg: "rgba(12, 4, 2, 0.15)"
+  },
+  ocean: {
+    baseHue: 176,
+    coreA: "rgba(255,255,255,0.9)",
+    coreB: "rgba(45,212,191,0.46)",
+    coreC: "rgba(59,130,246,0.16)",
+    bg: "rgba(1, 8, 18, 0.15)"
+  },
+  aurora: {
+    baseHue: 128,
+    coreA: "rgba(255,255,255,0.9)",
+    coreB: "rgba(134,239,172,0.42)",
+    coreC: "rgba(217,70,239,0.15)",
+    bg: "rgba(2, 8, 12, 0.15)"
+  }
 };
 
 const config = {
-  particleCount: window.innerWidth < 700 ? 2200 : 4400,
-  coreGravity: 0.0017,
-  orbitStrength: 0.019,
+  particleCount: window.innerWidth < 700 ? 2400 : 5200,
+  coreGravity: 0.00162,
+  orbitStrength: 0.02,
   drag: 0.986,
-  pointerRadius: 210
+  pointerRadius: 220
 };
 
 function resize() {
@@ -50,26 +91,27 @@ function createParticles() {
 
   const cx = width / 2;
   const cy = height / 2;
-  const maxRadius = Math.min(width, height) * 0.45;
+  const maxRadius = Math.min(width, height) * 0.46;
 
   for (let i = 0; i < config.particleCount; i++) {
     const angle = Math.random() * Math.PI * 2;
-    const radius = Math.pow(Math.random(), 0.55) * maxRadius;
+    const radius = Math.pow(Math.random(), 0.52) * maxRadius;
 
     const x = cx + Math.cos(angle) * radius;
     const y = cy + Math.sin(angle) * radius * 0.62;
 
     const tangent = angle + Math.PI / 2;
-    const speed = 0.25 + Math.random() * 1.5;
+    const speed = 0.22 + Math.random() * 1.55;
 
     particles.push({
       x,
       y,
       vx: Math.cos(tangent) * speed,
       vy: Math.sin(tangent) * speed,
-      size: 0.7 + Math.random() * 1.9,
-      depth: 0.35 + Math.random() * 0.95,
-      spark: Math.random() > 0.985
+      size: 0.65 + Math.random() * 1.9,
+      depth: 0.32 + Math.random() * 1,
+      spark: Math.random() > 0.982,
+      pulse: Math.random() * Math.PI * 2
     });
   }
 }
@@ -81,7 +123,43 @@ function setMode(nextMode) {
     button.classList.toggle("active", button.dataset.mode === mode);
   });
 
+  const labels = {
+    pull: "Gravity well engaged.",
+    push: "Repulsion field active.",
+    spin: "Orbital torque online.",
+    storm: "Storm field unstable.",
+    calm: "Stabilising particle flow."
+  };
+
+  statusText.textContent = labels[mode] || "Bend the galaxy.";
   pulseAt(pointer.x || width / 2, pointer.y || height / 2, 0.7);
+}
+
+function setTheme(nextTheme) {
+  theme = nextTheme;
+  hue = themes[theme].baseHue;
+
+  document.querySelectorAll("button[data-theme]").forEach((button) => {
+    button.classList.toggle("active", button.dataset.theme === theme);
+  });
+
+  statusText.textContent = `${theme[0].toUpperCase()}${theme.slice(1)} field loaded.`;
+  pulseAt(width / 2, height / 2, 1);
+}
+
+function spendEnergy(amount) {
+  energy = Math.max(0, energy - amount);
+}
+
+function recoverEnergy() {
+  const rate = mode === "calm" ? 0.16 : 0.07;
+  energy = Math.min(100, energy + rate);
+}
+
+function updateEnergyUI() {
+  const rounded = Math.round(energy);
+  energyText.textContent = `${rounded}%`;
+  energyFill.style.width = `${rounded}%`;
 }
 
 function pulseAt(x, y, strength = 1) {
@@ -94,7 +172,24 @@ function pulseAt(x, y, strength = 1) {
   });
 }
 
+function spawnComet() {
+  if (Math.random() > 0.018) return;
+
+  const fromLeft = Math.random() > 0.5;
+  comets.push({
+    x: fromLeft ? -60 : width + 60,
+    y: Math.random() * height * 0.7,
+    vx: fromLeft ? 7 + Math.random() * 5 : -7 - Math.random() * 5,
+    vy: 1 + Math.random() * 2,
+    life: 1,
+    hueOffset: Math.random() * 80
+  });
+}
+
 function explode(x = width / 2, y = height / 2, power = 16) {
+  if (energy < 12) return;
+
+  spendEnergy(12);
   pulseAt(x, y, 1.4);
 
   for (const p of particles) {
@@ -109,6 +204,9 @@ function explode(x = width / 2, y = height / 2, power = 16) {
 }
 
 function implode(x = width / 2, y = height / 2, power = 11) {
+  if (energy < 10) return;
+
+  spendEnergy(10);
   pulseAt(x, y, 1);
 
   for (const p of particles) {
@@ -124,8 +222,9 @@ function implode(x = width / 2, y = height / 2, power = 11) {
 
 function fling() {
   const speed = Math.hypot(pointer.vx, pointer.vy);
-  if (speed < 12) return;
+  if (speed < 12 || energy < 5) return;
 
+  spendEnergy(5);
   pulseAt(pointer.x, pointer.y, 1);
 
   for (const p of particles) {
@@ -133,10 +232,10 @@ function fling() {
     const dy = pointer.y - p.y;
     const dist = Math.hypot(dx, dy) || 1;
 
-    if (dist < 260) {
-      const influence = 1 - dist / 260;
-      p.vx += pointer.vx * 0.045 * influence;
-      p.vy += pointer.vy * 0.045 * influence;
+    if (dist < 280) {
+      const influence = 1 - dist / 280;
+      p.vx += pointer.vx * 0.05 * influence;
+      p.vy += pointer.vy * 0.05 * influence;
     }
   }
 }
@@ -167,7 +266,8 @@ function updateParticle(p) {
 
     if (pdist < config.pointerRadius) {
       const influence = 1 - pdist / config.pointerRadius;
-      const force = influence * (pointer.down ? 1.55 : 0.78) * p.depth;
+      const energyScale = 0.45 + energy / 100;
+      const force = influence * (pointer.down ? 1.55 : 0.78) * p.depth * energyScale;
 
       const px = pdx / pdist;
       const py = pdy / pdist;
@@ -201,13 +301,14 @@ function updateParticle(p) {
     }
   }
 
+  p.pulse += 0.04;
   p.vx *= config.drag;
   p.vy *= config.drag;
 
   p.x += p.vx;
   p.y += p.vy;
 
-  if (p.x < -100 || p.x > width + 100 || p.y < -100 || p.y > height + 100) {
+  if (p.x < -120 || p.x > width + 120 || p.y < -120 || p.y > height + 120) {
     const angle = Math.random() * Math.PI * 2;
     const radius = Math.random() * Math.min(width, height) * 0.13;
 
@@ -225,20 +326,21 @@ function drawParticle(p) {
   const glow = Math.max(0, 1 - dist / (Math.min(width, height) * 0.58));
 
   const speed = Math.min(1, Math.hypot(p.vx, p.vy) / 12);
+  const twinkle = 0.75 + Math.sin(p.pulse) * 0.25;
   const particleHue = hue + p.depth * 70 + glow * 60 + speed * 40;
-  const alpha = 0.18 + p.depth * 0.36 + glow * 0.35 + speed * 0.18;
+  const alpha = (0.16 + p.depth * 0.35 + glow * 0.35 + speed * 0.18) * twinkle;
 
   ctx.beginPath();
   ctx.fillStyle = `hsla(${particleHue}, 100%, ${58 + glow * 24 + speed * 10}%, ${alpha})`;
-  ctx.arc(p.x, p.y, p.size * p.depth * (p.spark ? 1.8 : 1), 0, Math.PI * 2);
+  ctx.arc(p.x, p.y, p.size * p.depth * (p.spark ? 2 : 1), 0, Math.PI * 2);
   ctx.fill();
 
   if (speed > 0.45 || p.spark) {
     ctx.beginPath();
-    ctx.strokeStyle = `hsla(${particleHue}, 100%, 75%, ${alpha * 0.35})`;
+    ctx.strokeStyle = `hsla(${particleHue}, 100%, 75%, ${alpha * 0.38})`;
     ctx.lineWidth = p.size * 0.55;
     ctx.moveTo(p.x, p.y);
-    ctx.lineTo(p.x - p.vx * 2.2, p.y - p.vy * 2.2);
+    ctx.lineTo(p.x - p.vx * 2.4, p.y - p.vy * 2.4);
     ctx.stroke();
   }
 }
@@ -246,23 +348,24 @@ function drawParticle(p) {
 function drawCore() {
   const cx = width / 2;
   const cy = height / 2;
+  const t = themes[theme];
 
-  const gradient = ctx.createRadialGradient(cx, cy, 0, cx, cy, Math.min(width, height) * 0.25);
-  gradient.addColorStop(0, "rgba(255,255,255,0.95)");
-  gradient.addColorStop(0.08, "rgba(125,211,252,0.45)");
-  gradient.addColorStop(0.34, "rgba(168,85,247,0.14)");
+  const gradient = ctx.createRadialGradient(cx, cy, 0, cx, cy, Math.min(width, height) * 0.27);
+  gradient.addColorStop(0, t.coreA);
+  gradient.addColorStop(0.08, t.coreB);
+  gradient.addColorStop(0.34, t.coreC);
   gradient.addColorStop(1, "rgba(0,0,0,0)");
 
   ctx.fillStyle = gradient;
   ctx.beginPath();
-  ctx.arc(cx, cy, Math.min(width, height) * 0.25, 0, Math.PI * 2);
+  ctx.arc(cx, cy, Math.min(width, height) * 0.27, 0, Math.PI * 2);
   ctx.fill();
 }
 
 function drawPointerGlow() {
   if (!pointer.active) return;
 
-  const radius = pointer.down ? 165 : 110;
+  const radius = pointer.down ? 175 : 112;
   const gradient = ctx.createRadialGradient(pointer.x, pointer.y, 0, pointer.x, pointer.y, radius);
 
   gradient.addColorStop(0, "rgba(255,255,255,0.26)");
@@ -294,15 +397,46 @@ function drawShockwaves() {
   }
 }
 
+function drawComets() {
+  for (let i = comets.length - 1; i >= 0; i--) {
+    const c = comets[i];
+
+    c.x += c.vx;
+    c.y += c.vy;
+    c.life *= 0.985;
+
+    ctx.beginPath();
+    ctx.strokeStyle = `hsla(${hue + c.hueOffset}, 100%, 75%, ${c.life * 0.38})`;
+    ctx.lineWidth = 2;
+    ctx.moveTo(c.x, c.y);
+    ctx.lineTo(c.x - c.vx * 10, c.y - c.vy * 10);
+    ctx.stroke();
+
+    if (c.life < 0.05 || c.x < -160 || c.x > width + 160 || c.y > height + 160) {
+      comets.splice(i, 1);
+    }
+  }
+}
+
 function loop() {
-  ctx.fillStyle = "rgba(2, 6, 23, 0.16)";
+  if (paused) {
+    requestAnimationFrame(loop);
+    return;
+  }
+
+  ctx.fillStyle = themes[theme].bg;
   ctx.fillRect(0, 0, width, height);
 
   hue += mode === "storm" ? 0.7 : 0.18;
 
+  recoverEnergy();
+  updateEnergyUI();
+  spawnComet();
+
   drawCore();
   drawPointerGlow();
   drawShockwaves();
+  drawComets();
 
   ctx.globalCompositeOperation = "lighter";
 
@@ -330,6 +464,10 @@ function updatePointer(clientX, clientY) {
   pointer.vy = pointer.y - pointer.prevY;
 
   pointer.active = true;
+
+  if (pointer.down && mode !== "calm") {
+    spendEnergy(0.04);
+  }
 }
 
 window.addEventListener("resize", resize);
@@ -398,6 +536,25 @@ document.querySelectorAll("button[data-mode]").forEach((button) => {
   });
 });
 
+document.querySelectorAll("button[data-theme]").forEach((button) => {
+  button.addEventListener("click", () => {
+    setTheme(button.dataset.theme);
+  });
+});
+
+resetBtn.addEventListener("click", () => {
+  createParticles();
+  energy = 100;
+  pulseAt(width / 2, height / 2, 1.2);
+  statusText.textContent = "Particle field reset.";
+});
+
+pauseBtn.addEventListener("click", () => {
+  paused = !paused;
+  pauseBtn.textContent = paused ? "Resume" : "Pause";
+  statusText.textContent = paused ? "Simulation paused." : "Simulation resumed.";
+});
+
 window.addEventListener("keydown", (event) => {
   if (event.key === "1") setMode("pull");
   if (event.key === "2") setMode("push");
@@ -411,6 +568,12 @@ window.addEventListener("keydown", (event) => {
 
   if (event.key.toLowerCase() === "i") {
     implode(pointer.x || width / 2, pointer.y || height / 2, 12);
+  }
+
+  if (event.key.toLowerCase() === "r") {
+    createParticles();
+    energy = 100;
+    pulseAt(width / 2, height / 2, 1.2);
   }
 });
 
