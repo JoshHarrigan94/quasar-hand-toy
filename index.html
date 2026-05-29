@@ -14,22 +14,35 @@
 
   <video id="cameraFeed" playsinline muted autoplay></video>
 
-  <button id="uiToggle" class="ui-toggle" aria-label="Toggle interface">
+  <button id="uiToggle" class="ui-toggle" aria-label="Toggle observatory interface">
     Observatory
   </button>
 
   <div id="interfaceShell" class="hud">
-    <div class="brand">
+    <section class="observatory-card primary-readout">
+      <span class="readout-kicker">Object</span>
       <h1>The Infinity Core</h1>
-      <p id="statusText">An impossible object suspended in the void.</p>
+      <p id="statusText">Dormant. Suspended in the void.</p>
 
-      <div class="gesture-card">
-        <span class="gesture-label">Gesture</span>
-        <strong id="gestureText">Touch / Mouse</strong>
+      <div class="readout-grid">
+        <div>
+          <span>State</span>
+          <strong id="artifactStateText">Dormant</strong>
+        </div>
+
+        <div>
+          <span>Gesture</span>
+          <strong id="gestureText">Touch / Mouse</strong>
+        </div>
+
+        <div>
+          <span>Influence</span>
+          <strong id="energyText">100%</strong>
+        </div>
       </div>
-    </div>
+    </section>
 
-    <div class="panel">
+    <section class="observatory-card control-readout">
       <div class="section-label">Influence</div>
 
       <div class="controls">
@@ -42,51 +55,24 @@
 
       <div class="utility-row">
         <button id="cameraBtn">Start Camera</button>
-        <button id="resetBtn">Reset</button>
-        <button id="pauseBtn">Pause</button>
+        <button id="resetBtn">Reform</button>
+        <button id="pauseBtn">Suspend</button>
       </div>
 
       <div class="camera-status">
         <span id="handStatus">Hand tracking off</span>
       </div>
 
-      <div class="gesture-help">
-        <div>
-          <strong>Open hand</strong>
-          <span>expand field</span>
-        </div>
-
-        <div>
-          <strong>Pinch</strong>
-          <span>collapse matter</span>
-        </div>
-
-        <div>
-          <strong>Fast swipe</strong>
-          <span>gravity wave</span>
-        </div>
-
-        <div>
-          <strong>Hold still</strong>
-          <span>quiet the core</span>
-        </div>
-      </div>
-
       <div class="energy-wrap">
-        <div class="energy-label">
-          <span>Influence</span>
-          <span id="energyText">100%</span>
-        </div>
-
         <div class="energy-track">
           <div id="energyFill"></div>
         </div>
       </div>
-    </div>
+    </section>
   </div>
 
   <div class="hint">
-    Collapse · Expand · Rotate · Disturb · Stillness
+    H hide · R reform · Space pulse · Pinch collapse · Open hand expand
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
