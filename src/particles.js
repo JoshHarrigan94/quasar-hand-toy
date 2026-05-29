@@ -1,5 +1,6 @@
 import { state } from "./state.js";
 import { CONFIG } from "./config.js";
+import { chooseStructureForParticle } from "./cosmicStructures.js";
 
 export function getParticleCount() {
   return window.innerWidth < 700
@@ -46,8 +47,10 @@ export function createParticles() {
       spark: Math.random() > 0.982,
       pulse: Math.random() * Math.PI * 2,
 
-      structureId: null,
-      orbitBand: null
+      structureId: chooseStructureForParticle(i, particleCount),
+      structureBand: Math.random(),
+      structurePhase: Math.random() * Math.PI * 2,
+      structurePull: 0.35 + Math.random() * 0.65
     });
   }
 }
