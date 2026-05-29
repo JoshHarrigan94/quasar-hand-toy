@@ -1,19 +1,26 @@
 export const CONFIG = {
   particles: {
-    mobileCount: 2400,
-    desktopCount: 5200,
+    mobileCount: 3000,
+    desktopCount: 6500,
     maxDevicePixelRatio: 2,
-    respawnPadding: 120,
-    galaxyRadiusFactor: 0.46,
+    respawnPadding: 140,
+    galaxyRadiusFactor: 0.5,
     verticalCompression: 0.62
   },
 
   physics: {
-    coreGravity: 0.00162,
-    orbitStrength: 0.02,
-    drag: 0.986,
-    pointerRadius: 220,
-    flingRadius: 280
+    coreGravity: 0.00145,
+    orbitStrength: 0.018,
+    drag: 0.987,
+    pointerRadius: 230,
+    flingRadius: 300
+  },
+
+  structures: {
+    enabled: true,
+    structurePullMultiplier: 1.35,
+    orbitRevealStrength: 0.42,
+    guideOpacity: 1
   },
 
   energy: {
