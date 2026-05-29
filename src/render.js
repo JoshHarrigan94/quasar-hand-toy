@@ -1,6 +1,6 @@
 import { state } from "./state.js";
 import { CONFIG } from "./config.js";
-import { CORE_LAYERS } from "./infinityCore.js";
+import { CORE_LAYERS, GRAVITY_PATHS } from "./infinityCore.js";
 
 export function clearCanvas() {
   const ctx = state.ctx;
@@ -69,19 +69,6 @@ export function drawCore() {
   ctx.fillStyle = `rgba(0,0,0,${0.997 - awake * 0.025})`;
   ctx.arc(cx, cy, Math.max(unit * 0.04, voidRadius), 0, Math.PI * 2);
   ctx.fill();
-
-  ctx.save();
-  ctx.translate(cx, cy);
-  ctx.rotate(state.hue * (0.0008 + awake * 0.00035));
-  ctx.scale(1, 0.36 + openness * 0.04);
-
-  ctx.beginPath();
-  ctx.strokeStyle = `rgba(220,230,240,${0.012 + awake * 0.018})`;
-  ctx.lineWidth = 1;
-  ctx.arc(0, 0, unit * (0.21 + openness * 0.035), 0, Math.PI * 2);
-  ctx.stroke();
-
-  ctx.restore();
 }
 
 function drawStarfield() {
@@ -103,6 +90,60 @@ function drawStarfield() {
     ctx.arc(x, y, size, 0, Math.PI * 2);
     ctx.fill();
   }
+}
+
+function getPathVisuals(particle) {
+  if (particle.gravityPath === GRAVITY_PATHS.TORUS) {
+    return {
+      alpha: 1.08,
+      size: 0.94,
+      trail: 1.05,
+      lightness: 2
+    };
+  }
+
+  if (particle.gravityPath === GRAVITY_PATHS.INFINITY) {
+    return {
+      alpha: 1.14,
+      size: 1,
+      trail: 1.12,
+      lightness: 4
+    };
+  }
+
+  if (particle.gravityPath === GRAVITY_PATHS.SINE) {
+    return {
+      alpha: 0.92,
+      size: 0.82,
+      trail: 0.86,
+      lightness: -1
+    };
+  }
+
+  if (particle.gravityPath === GRAVITY_PATHS.PARABOLA) {
+    return {
+      alpha: 0.82,
+      size: 0.76,
+      trail: 0.8,
+      lightness: -3
+    };
+  }
+
+  if (particle.gravityPath === GRAVITY_PATHS.DEEP_FIELD) {
+    return {
+      alpha: 0.56,
+      size: 0.62,
+      trail: 0.52,
+      lightness: -8
+    };
+  }
+
+  return {
+    alpha: 1,
+    size: 1,
+    trail: 1,
+    lightness: 0
+  };
 }
 
 function getLayerVisuals(particle) {
@@ -167,6 +208,7 @@ function getLayerVisuals(particle) {
 export function drawParticle(particle) {
   const ctx = state.ctx;
   const visuals = getLayerVisuals(particle);
+  const pathVisuals = getPathVisuals(particle);
 
   const dx = particle.x - state.width / 2;
   const dy = particle.y - state.height / 2;
@@ -178,21 +220,10 @@ export function drawParticle(particle) {
 
   let sizeBoost = 1;
 
-  if (particle.structureId === "central-mass") {
-    sizeBoost = 1.04;
-  }
-
-  if (particle.structureId === "inner-artifact-ring") {
-    sizeBoost = 0.82;
-  }
-
-  if (particle.structureId === "outer-artifact-ring") {
-    sizeBoost = 0.68;
-  }
-
-  if (particle.structureId === "deep-field") {
-    sizeBoost = 0.52;
-  }
+  if (particle.structureId === "central-mass") sizeBoost = 1.04;
+  if (particle.structureId === "inner-artifact-ring") sizeBoost = 0.82;
+  if (particle.structureId === "outer-artifact-ring") sizeBoost = 0.68;
+  if (particle.structureId === "deep-field") sizeBoost = 0.52;
 
   const particleHue =
     state.hue +
@@ -208,12 +239,13 @@ export function drawParticle(particle) {
       glow * visuals.alphaGlow +
       speed * visuals.alphaSpeed
     ) *
-    twinkle;
+    twinkle *
+    pathVisuals.alpha;
 
   ctx.beginPath();
 
   ctx.fillStyle = `hsla(${particleHue}, ${visuals.saturation}%, ${
-    visuals.lightness + glow * 8 + speed * 4
+    visuals.lightness + pathVisuals.lightness + glow * 8 + speed * 4
   }%, ${alpha})`;
 
   ctx.arc(
@@ -222,6 +254,7 @@ export function drawParticle(particle) {
     particle.size *
       particle.depth *
       visuals.size *
+      pathVisuals.size *
       sizeBoost *
       (particle.spark ? 1.5 : 1),
     0,
@@ -235,7 +268,7 @@ export function drawParticle(particle) {
 
     ctx.strokeStyle = `hsla(${particleHue}, ${visuals.saturation + 3}%, ${
       visuals.lightness + 5
-    }%, ${alpha * visuals.trail})`;
+    }%, ${alpha * visuals.trail * pathVisuals.trail})`;
 
     ctx.lineWidth = particle.size * visuals.size * 0.38;
     ctx.moveTo(particle.x, particle.y);
@@ -339,7 +372,6 @@ export function renderFrame() {
   const ctx = state.ctx;
 
   clearCanvas();
-
   drawStarfield();
   drawCore();
   drawPointerGlow();
