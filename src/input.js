@@ -1,6 +1,13 @@
 import { state } from "./state.js";
 import { CONFIG } from "./config.js";
-import { setMode, setGesture, resetField } from "./ui.js";
+import {
+  setMode,
+  setGesture,
+  resetField,
+  toggleInterface,
+  openInterface,
+  collapseInterface
+} from "./ui.js";
 import { explode, implode, fling, spendEnergy } from "./physics.js";
 
 export function updatePointer(clientX, clientY, source = "touch") {
@@ -105,6 +112,8 @@ export function bindInputControls() {
   });
 
   window.addEventListener("keydown", (event) => {
+    const key = event.key.toLowerCase();
+
     if (event.key === "1") setMode("pull");
     if (event.key === "2") setMode("push");
     if (event.key === "3") setMode("spin");
@@ -112,6 +121,7 @@ export function bindInputControls() {
     if (event.key === "5") setMode("storm");
 
     if (event.key === " ") {
+      event.preventDefault();
       setGesture("Pulse wave");
       explode(
         state.pointer.x || state.width / 2,
@@ -120,7 +130,7 @@ export function bindInputControls() {
       );
     }
 
-    if (event.key.toLowerCase() === "i") {
+    if (key === "i") {
       setGesture("Deep collapse");
       implode(
         state.pointer.x || state.width / 2,
@@ -129,9 +139,21 @@ export function bindInputControls() {
       );
     }
 
-    if (event.key.toLowerCase() === "r") {
+    if (key === "r") {
       setGesture("Reforming");
       resetField();
+    }
+
+    if (key === "h") {
+      toggleInterface();
+    }
+
+    if (key === "o") {
+      openInterface();
+    }
+
+    if (key === "escape") {
+      collapseInterface();
     }
   });
 }
