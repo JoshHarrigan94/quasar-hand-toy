@@ -33,7 +33,7 @@ export function createParticles() {
         CONFIG.particles.verticalCompression;
 
     const tangent = angle + Math.PI / 2;
-    const speed = 0.22 + Math.random() * 1.55;
+    const speed = 0.18 + Math.random() * 1.25;
 
     state.particles.push({
       x,
@@ -42,16 +42,21 @@ export function createParticles() {
       vx: Math.cos(tangent) * speed,
       vy: Math.sin(tangent) * speed,
 
-      size: 0.65 + Math.random() * 1.9,
-      depth: 0.32 + Math.random() * 1,
+      size: 0.45 + Math.random() * 1.35,
+      depth: 0.25 + Math.random() * 1,
 
-      spark: Math.random() > 0.982,
+      spark: Math.random() > 0.988,
       pulse: Math.random() * Math.PI * 2,
 
       structureId: chooseStructureForParticle(i, particleCount),
       structureBand: Math.random(),
       structurePhase: Math.random() * Math.PI * 2,
-      structurePull: 0.35 + Math.random() * 0.65
+      structurePull: 0.28 + Math.random() * 0.62,
+
+      layer: assignCoreLayer(i, particleCount),
+      layerPhase: Math.random() * Math.PI * 2,
+      layerBand: Math.random(),
+      layerPull: 0.35 + Math.random() * 0.75
     });
   }
 }
