@@ -1,6 +1,7 @@
 import { state } from "./state.js";
 import { CONFIG } from "./config.js";
 import { chooseStructureForParticle } from "./cosmicStructures.js";
+import { assignCoreLayer } from "./infinityCore.js";
 
 export function getParticleCount() {
   return window.innerWidth < 700
