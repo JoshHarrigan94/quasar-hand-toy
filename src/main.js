@@ -71,6 +71,15 @@ function initialiseUi() {
   }
 }
 
+function loop() {
+  if (!state.paused) {
+    advanceHue();
+    renderFrame();
+  }
+
+  requestAnimationFrame(loop);
+}
+
 function startApplication() {
   cacheDomElements();
 
@@ -83,9 +92,11 @@ createParticles();
 initialiseUi();
 
   console.log("🚀 Quasar Engine Started");
-  console.log(state);
+console.log(state);
 
-  window.addEventListener("resize", () => {
+loop();
+
+window.addEventListener("resize", () => {
   resizeCanvas();
   createParticles();
 });
