@@ -9,6 +9,8 @@
 <body>
   <canvas id="quasarCanvas"></canvas>
 
+  <video id="cameraFeed" playsinline muted></video>
+
   <div class="hud">
     <div class="brand">
       <h1>Quasar Toy</h1>
@@ -32,8 +34,13 @@
       </div>
 
       <div class="utility-row">
+        <button id="cameraBtn">Start Camera</button>
         <button id="resetBtn">Reset</button>
         <button id="pauseBtn">Pause</button>
+      </div>
+
+      <div class="camera-status">
+        <span id="handStatus">Hand tracking off</span>
       </div>
 
       <div class="energy-wrap">
@@ -49,9 +56,11 @@
   </div>
 
   <div class="hint">
-    1 Pull · 2 Push · 3 Spin · 4 Calm · 5 Storm · Space Explode · I Implode · R Reset
+    Mouse/touch now · Camera next · 1 Pull · 2 Push · 3 Spin · 4 Calm · 5 Storm · Space Explode
   </div>
 
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
   <script src="app.js"></script>
-</body> 
+</body>
 </html>
