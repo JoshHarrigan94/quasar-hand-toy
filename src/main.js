@@ -2,6 +2,10 @@ import { state } from "./state.js";
 import { CONFIG } from "./config.js";
 import { createParticles } from "./particles.js";
 import { renderFrame, advanceHue } from "./render.js";
+import { updatePhysics } from "./physics.js";
+import { updateEnergyUI, initialiseUiText, bindUiControls } from "./ui.js";
+import { bindInputControls } from "./input.js";
+import { startCamera, checkHandLost } from "./handTracking.js";
 
 function cacheDomElements() {
   state.ui.statusText = document.getElementById("statusText");
@@ -74,7 +78,10 @@ function initialiseUi() {
 function loop() {
   if (!state.paused) {
     advanceHue();
-    renderFrame();
+updatePhysics();
+updateEnergyUI();
+checkHandLost();
+renderFrame();
   }
 
   requestAnimationFrame(loop);
@@ -89,7 +96,9 @@ function startApplication() {
 
 createParticles();
 
-initialiseUi();
+initialiseUiText();
+bindUiControls({ onCameraStart: startCamera });
+bindInputControls();
 
   console.log("🚀 Quasar Engine Started");
 console.log(state);
