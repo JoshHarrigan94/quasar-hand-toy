@@ -39,22 +39,22 @@ export function wakeArtifact({
 }
 
 export function updateArtifactState() {
-  state.artifact.pulse *= 0.94;
-  state.artifact.disturbance *= 0.985;
-  state.artifact.pressure *= 0.982;
-  state.artifact.openness *= 0.985;
+  state.artifact.pulse *= CONFIG.artifact.pulseDecay;
+state.artifact.disturbance *= CONFIG.artifact.disturbanceDecay;
+state.artifact.pressure *= CONFIG.artifact.pressureDecay;
+state.artifact.openness *= CONFIG.artifact.opennessDecay;
 
-  const timeSinceInteraction = Date.now() - state.artifact.lastInteractionAt;
+const timeSinceInteraction = Date.now() - state.artifact.lastInteractionAt;
 
-  if (timeSinceInteraction > 1800) {
-    state.artifact.awakeLevel *= 0.996;
-  }
+if (timeSinceInteraction > CONFIG.artifact.sleepDelayMs) {
+  state.artifact.awakeLevel *= CONFIG.artifact.awakeDecay;
+}
 
-  if (state.mode === "calm") {
-    state.artifact.disturbance *= 0.97;
-    state.artifact.pressure *= 0.97;
-    state.artifact.openness *= 0.985;
-  }
+if (state.mode === "calm") {
+  state.artifact.disturbance *= CONFIG.artifact.calmDecayMultiplier;
+  state.artifact.pressure *= CONFIG.artifact.calmDecayMultiplier;
+  state.artifact.openness *= CONFIG.artifact.opennessDecay;
+}
 
   if (state.artifact.disturbance > 0.72) {
     state.artifact.stateLabel = "Unstable";
