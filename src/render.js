@@ -1,6 +1,5 @@
 import { state } from "./state.js";
 import { CONFIG } from "./config.js";
-import { getTheme } from "./themes.js";
 import {
   getCosmicStructures,
   getMassAnchors,
@@ -10,31 +9,74 @@ import {
 
 export function clearCanvas() {
   const ctx = state.ctx;
-  const theme = getTheme(state.theme);
 
-  ctx.fillStyle = theme.bg;
+  const gradient = ctx.createRadialGradient(
+    state.width / 2,
+    state.height / 2,
+    0,
+    state.width / 2,
+    state.height / 2,
+    Math.max(state.width, state.height)
+  );
+
+  gradient.addColorStop(0, "#050507");
+  gradient.addColorStop(0.25, "#020203");
+  gradient.addColorStop(1, "#000000");
+
+  ctx.fillStyle = gradient;
   ctx.fillRect(0, 0, state.width, state.height);
 }
 
 export function drawCore() {
   const ctx = state.ctx;
-  const theme = getTheme(state.theme);
 
   const cx = state.width / 2;
   const cy = state.height / 2;
-  const radius = Math.min(state.width, state.height) * 0.27;
+  const outerRadius = Math.min(state.width, state.height) * 0.22;
 
-  const gradient = ctx.createRadialGradient(cx, cy, 0, cx, cy, radius);
+  const halo = ctx.createRadialGradient(
+    cx,
+    cy,
+    outerRadius * 0.15,
+    cx,
+    cy,
+    outerRadius
+  );
 
-  gradient.addColorStop(0, theme.coreA);
-  gradient.addColorStop(0.08, theme.coreB);
-  gradient.addColorStop(0.34, theme.coreC);
-  gradient.addColorStop(1, "rgba(0,0,0,0)");
+  halo.addColorStop(0, "rgba(255,255,255,0)");
+  halo.addColorStop(0.25, "rgba(125,211,252,0.08)");
+  halo.addColorStop(0.55, "rgba(168,85,247,0.14)");
+  halo.addColorStop(1, "rgba(0,0,0,0)");
 
-  ctx.fillStyle = gradient;
+  ctx.fillStyle = halo;
   ctx.beginPath();
-  ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+  ctx.arc(cx, cy, outerRadius, 0, Math.PI * 2);
   ctx.fill();
+
+  ctx.beginPath();
+  ctx.fillStyle = "rgba(0,0,0,0.98)";
+  ctx.arc(cx, cy, outerRadius * 0.36, 0, Math.PI * 2);
+  ctx.fill();
+}
+
+function drawStarfield() {
+  const ctx = state.ctx;
+
+  for (let i = 0; i < 350; i++) {
+    const seed = i * 99991;
+
+    const x = ((Math.sin(seed) + 1) * 0.5) * state.width;
+    const y = ((Math.cos(seed) + 1) * 0.5) * state.height;
+
+    const isBright = seed % 100 < 3;
+    const size = isBright ? 2 : 0.6;
+    const alpha = isBright ? 0.8 : 0.15;
+
+    ctx.beginPath();
+    ctx.fillStyle = `rgba(255,255,255,${alpha})`;
+    ctx.arc(x, y, size, 0, Math.PI * 2);
+    ctx.fill();
+  }
 }
 
 export function drawCosmicStructureGuides() {
@@ -48,42 +90,47 @@ export function drawCosmicStructureGuides() {
     const position = resolveStructurePosition(structure, structures);
 
     if (structure.type === STRUCTURE_TYPES.STAR) {
-      drawSoftOrb(position.x, position.y, structure.radius * 2.6, "rgba(255,255,255,0.18)");
-      drawOrbitLine(position.x, position.y, structure.radius * 4.2, 0.58, "rgba(255,255,255,0.05)");
+      drawSoftOrb(
+        position.x,
+        position.y,
+        structure.radius * 2.2,
+        "rgba(255,255,255,0.08)"
+      );
     }
 
     if (structure.type === STRUCTURE_TYPES.PLANET) {
-      drawSoftOrb(position.x, position.y, structure.radius * 2.1, "rgba(125,211,252,0.12)");
-      drawOrbitLine(position.x, position.y, structure.radius * 2.6, 0.38, "rgba(125,211,252,0.08)");
+      drawSoftOrb(
+        position.x,
+        position.y,
+        structure.radius * 1.7,
+        "rgba(125,211,252,0.045)"
+      );
     }
 
     if (structure.type === STRUCTURE_TYPES.MOON) {
-      drawSoftOrb(position.x, position.y, structure.radius * 1.9, "rgba(226,232,240,0.09)");
+      drawSoftOrb(
+        position.x,
+        position.y,
+        structure.radius * 1.5,
+        "rgba(226,232,240,0.035)"
+      );
     }
 
     if (structure.type === STRUCTURE_TYPES.BLACK_HOLE) {
-      drawBlackHole(position.x, position.y, structure.radius, structure.influenceRadius);
+      drawBlackHole(
+        position.x,
+        position.y,
+        structure.radius,
+        structure.influenceRadius
+      );
     }
 
     if (structure.type === STRUCTURE_TYPES.ASTEROID_BELT) {
-      drawOrbitLine(position.x, position.y, structure.innerRadius, 0.48, "rgba(255,255,255,0.035)");
-      drawOrbitLine(position.x, position.y, structure.outerRadius, 0.48, "rgba(255,255,255,0.05)");
+      // Hidden in Awe Pass. Particles reveal the belt instead.
     }
 
     if (structure.type === STRUCTURE_TYPES.RING_SYSTEM) {
-      const parent = structures.find((item) => item.id === structure.parentId);
-      if (!parent) continue;
-
-      const parentPosition = resolveStructurePosition(parent, structures);
-
-      drawTiltedRing(
-        parentPosition.x,
-        parentPosition.y,
-        structure.innerRadius,
-        structure.outerRadius,
-        structure.tilt || 0,
-        "rgba(255,255,255,0.095)"
-      );
+      // Hidden in Awe Pass. Particles reveal the ring instead.
     }
   }
 
@@ -113,10 +160,10 @@ export function drawMassAnchorFields() {
       fieldRadius
     );
 
-    const alpha = 0.035 + anchor.glow * 0.055;
+    const alpha = 0.015 + anchor.glow * 0.022;
 
     gradient.addColorStop(0, `rgba(255,255,255,${alpha})`);
-    gradient.addColorStop(0.28, `rgba(125,211,252,${alpha * 0.65})`);
+    gradient.addColorStop(0.28, `rgba(125,211,252,${alpha * 0.5})`);
     gradient.addColorStop(1, "rgba(0,0,0,0)");
 
     ctx.fillStyle = gradient;
@@ -144,12 +191,19 @@ function drawSoftOrb(x, y, radius, colour) {
 function drawBlackHole(x, y, radius, influenceRadius) {
   const ctx = state.ctx;
 
-  const halo = ctx.createRadialGradient(x, y, radius * 0.5, x, y, influenceRadius);
+  const halo = ctx.createRadialGradient(
+    x,
+    y,
+    radius * 0.5,
+    x,
+    y,
+    influenceRadius
+  );
 
-  halo.addColorStop(0, "rgba(0,0,0,0.95)");
-  halo.addColorStop(0.12, "rgba(15,23,42,0.9)");
-  halo.addColorStop(0.2, "rgba(168,85,247,0.16)");
-  halo.addColorStop(0.42, "rgba(125,211,252,0.055)");
+  halo.addColorStop(0, "rgba(0,0,0,0.98)");
+  halo.addColorStop(0.14, "rgba(15,23,42,0.75)");
+  halo.addColorStop(0.25, "rgba(168,85,247,0.08)");
+  halo.addColorStop(0.5, "rgba(125,211,252,0.025)");
   halo.addColorStop(1, "rgba(0,0,0,0)");
 
   ctx.fillStyle = halo;
@@ -158,53 +212,19 @@ function drawBlackHole(x, y, radius, influenceRadius) {
   ctx.fill();
 
   ctx.beginPath();
-  ctx.fillStyle = "rgba(0,0,0,0.98)";
+  ctx.fillStyle = "rgba(0,0,0,0.99)";
   ctx.arc(x, y, radius * 1.45, 0, Math.PI * 2);
   ctx.fill();
 
   ctx.save();
   ctx.translate(x, y);
   ctx.rotate(state.hue * 0.004);
-  ctx.scale(1, 0.28);
-
-  ctx.beginPath();
-  ctx.strokeStyle = "rgba(255,255,255,0.11)";
-  ctx.lineWidth = Math.max(1, radius * 0.5);
-  ctx.arc(0, 0, radius * 3.5, 0, Math.PI * 2);
-  ctx.stroke();
-
-  ctx.restore();
-}
-
-function drawOrbitLine(x, y, radius, compression, colour) {
-  const ctx = state.ctx;
-
-  ctx.save();
-  ctx.translate(x, y);
-  ctx.scale(1, compression);
-
-  ctx.beginPath();
-  ctx.strokeStyle = colour;
-  ctx.lineWidth = 1;
-  ctx.arc(0, 0, radius, 0, Math.PI * 2);
-  ctx.stroke();
-
-  ctx.restore();
-}
-
-function drawTiltedRing(x, y, innerRadius, outerRadius, tilt, colour) {
-  const ctx = state.ctx;
-  const midRadius = (innerRadius + outerRadius) / 2;
-
-  ctx.save();
-  ctx.translate(x, y);
-  ctx.rotate(tilt);
   ctx.scale(1, 0.24);
 
   ctx.beginPath();
-  ctx.strokeStyle = colour;
-  ctx.lineWidth = Math.max(1, outerRadius - innerRadius);
-  ctx.arc(0, 0, midRadius, 0, Math.PI * 2);
+  ctx.strokeStyle = "rgba(255,255,255,0.045)";
+  ctx.lineWidth = Math.max(1, radius * 0.35);
+  ctx.arc(0, 0, radius * 3.8, 0, Math.PI * 2);
   ctx.stroke();
 
   ctx.restore();
@@ -229,68 +249,78 @@ export function drawParticle(particle) {
   let sizeBoost = 1;
 
   if (particle.structureId) {
-    structureBoost = 22;
-    sizeBoost = 1.12;
-  }
-
-  if (particle.structureId === "central-star") {
-    structureBoost = 48;
-    sizeBoost = 1.45;
-  }
-
-  if (particle.structureId === "ring-system") {
-    structureBoost = 12;
+    structureBoost = 8;
     sizeBoost = 0.9;
   }
 
+  if (particle.structureId === "central-star") {
+    structureBoost = 18;
+    sizeBoost = 1.15;
+  }
+
+  if (particle.structureId === "ring-system") {
+    structureBoost = 4;
+    sizeBoost = 0.62;
+  }
+
   if (particle.structureId === "asteroid-belt") {
-    structureBoost = -18;
-    sizeBoost = 0.78;
+    structureBoost = -10;
+    sizeBoost = 0.55;
   }
 
   if (particle.structureId === "hidden-black-hole") {
-    structureBoost = 75;
-    sizeBoost = 0.82;
+    structureBoost = 24;
+    sizeBoost = 0.58;
   }
 
   const particleHue =
     state.hue +
-    particle.depth * 70 +
-    glow * 60 +
-    speed * 40 +
+    particle.depth * 24 +
+    glow * 26 +
+    speed * 18 +
     structureBoost;
 
   const alpha =
-    (0.14 +
-      particle.depth * 0.35 +
-      glow * 0.35 +
-      speed * 0.18) *
+    (
+      0.04 +
+      particle.depth * 0.18 +
+      glow * 0.15 +
+      speed * 0.08
+    ) *
     twinkle;
 
   ctx.beginPath();
 
-  ctx.fillStyle = `hsla(${particleHue}, 100%, ${
-    58 + glow * 24 + speed * 10
+  ctx.fillStyle = `hsla(${particleHue}, 35%, ${
+    68 + glow * 18 + speed * 8
   }%, ${alpha})`;
 
   ctx.arc(
     particle.x,
     particle.y,
-    particle.size * particle.depth * sizeBoost * (particle.spark ? 2 : 1),
+    particle.size *
+      particle.depth *
+      0.55 *
+      sizeBoost *
+      (particle.spark ? 1.8 : 1),
     0,
     Math.PI * 2
   );
 
   ctx.fill();
 
-  if (speed > 0.45 || particle.spark) {
+  if (speed > 0.62 || particle.spark) {
     ctx.beginPath();
 
-    ctx.strokeStyle = `hsla(${particleHue}, 100%, 75%, ${alpha * 0.38})`;
-    ctx.lineWidth = particle.size * 0.55;
+    ctx.strokeStyle = `hsla(${particleHue}, 40%, 78%, ${alpha * 0.22})`;
+    ctx.lineWidth = particle.size * 0.32;
 
     ctx.moveTo(particle.x, particle.y);
-    ctx.lineTo(particle.x - particle.vx * 2.4, particle.y - particle.vy * 2.4);
+    ctx.lineTo(
+      particle.x - particle.vx * 1.9,
+      particle.y - particle.vy * 1.9
+    );
+
     ctx.stroke();
   }
 }
@@ -317,8 +347,8 @@ export function drawPointerGlow() {
     radius
   );
 
-  gradient.addColorStop(0, "rgba(255,255,255,0.28)");
-  gradient.addColorStop(0.22, "rgba(125,211,252,0.17)");
+  gradient.addColorStop(0, "rgba(255,255,255,0.12)");
+  gradient.addColorStop(0.22, "rgba(125,211,252,0.08)");
   gradient.addColorStop(1, "rgba(0,0,0,0)");
 
   ctx.fillStyle = gradient;
@@ -330,10 +360,10 @@ export function drawPointerGlow() {
     ctx.beginPath();
 
     ctx.strokeStyle = pointer.down
-      ? "rgba(255,255,255,0.85)"
-      : "rgba(255,255,255,0.45)";
+      ? "rgba(255,255,255,0.55)"
+      : "rgba(255,255,255,0.26)";
 
-    ctx.lineWidth = pointer.down ? 2.5 : 1.5;
+    ctx.lineWidth = pointer.down ? 2 : 1.2;
     ctx.arc(pointer.x, pointer.y, pointer.down ? 18 : 12, 0, Math.PI * 2);
     ctx.stroke();
   }
@@ -346,8 +376,8 @@ export function drawShockwaves() {
     const wave = state.shockwaves[i];
 
     ctx.beginPath();
-    ctx.strokeStyle = `rgba(255,255,255,${wave.alpha})`;
-    ctx.lineWidth = 2;
+    ctx.strokeStyle = `rgba(255,255,255,${wave.alpha * 0.45})`;
+    ctx.lineWidth = 1.4;
     ctx.arc(wave.x, wave.y, wave.radius, 0, Math.PI * 2);
     ctx.stroke();
 
@@ -372,13 +402,13 @@ export function drawComets() {
 
     ctx.beginPath();
 
-    ctx.strokeStyle = `hsla(${state.hue + comet.hueOffset}, 100%, 75%, ${
-      comet.life * 0.38
+    ctx.strokeStyle = `hsla(${state.hue + comet.hueOffset}, 35%, 75%, ${
+      comet.life * 0.16
     })`;
 
-    ctx.lineWidth = 2;
+    ctx.lineWidth = 1.2;
     ctx.moveTo(comet.x, comet.y);
-    ctx.lineTo(comet.x - comet.vx * 10, comet.y - comet.vy * 10);
+    ctx.lineTo(comet.x - comet.vx * 8, comet.y - comet.vy * 8);
     ctx.stroke();
 
     if (
@@ -397,6 +427,7 @@ export function renderFrame() {
 
   clearCanvas();
 
+  drawStarfield();
   drawCore();
   drawMassAnchorFields();
   drawCosmicStructureGuides();
@@ -416,6 +447,6 @@ export function renderFrame() {
 export function advanceHue() {
   state.hue +=
     state.mode === "storm"
-      ? CONFIG.visuals.stormHueSpeed
-      : CONFIG.visuals.normalHueSpeed;
+      ? CONFIG.visuals.stormHueSpeed * 0.55
+      : CONFIG.visuals.normalHueSpeed * 0.45;
 }
