@@ -8,7 +8,13 @@ import {
   openInterface,
   collapseInterface
 } from "./ui.js";
-import { explode, implode, fling, spendEnergy } from "./physics.js";
+import {
+  explode,
+  implode,
+  fling,
+  spendEnergy,
+  markInteraction
+} from "./physics.js";
 
 export function updatePointer(clientX, clientY, source = "touch") {
   const pointer = state.pointer;
@@ -24,6 +30,8 @@ export function updatePointer(clientX, clientY, source = "touch") {
 
   pointer.active = true;
   pointer.source = source;
+
+  markInteraction();
 
   if (pointer.down && state.mode !== "calm") {
     spendEnergy(CONFIG.energy.touchDrainRate);
@@ -44,6 +52,7 @@ export function bindInputControls() {
     setGesture("Collapsing matter");
     state.pointer.down = true;
 
+    markInteraction();
     updatePointer(event.clientX, event.clientY, "mouse");
   });
 
@@ -51,6 +60,8 @@ export function bindInputControls() {
     if (state.pointer.source === "hand" && state.cameraActive) return;
 
     state.pointer.down = false;
+
+    markInteraction();
     fling();
   });
 
@@ -63,6 +74,7 @@ export function bindInputControls() {
 
   window.addEventListener("dblclick", (event) => {
     setGesture("Pulse wave");
+    markInteraction();
     explode(event.clientX, event.clientY, 14);
   });
 
@@ -77,6 +89,8 @@ export function bindInputControls() {
       const now = Date.now();
 
       setGesture("Touching the field");
+      markInteraction();
+
       updatePointer(touch.clientX, touch.clientY, "touch");
 
       state.pointer.down = true;
@@ -108,21 +122,44 @@ export function bindInputControls() {
     if (state.pointer.source === "hand" && state.cameraActive) return;
 
     state.pointer.down = false;
+
+    markInteraction();
     fling();
   });
 
   window.addEventListener("keydown", (event) => {
     const key = event.key.toLowerCase();
 
-    if (event.key === "1") setMode("pull");
-    if (event.key === "2") setMode("push");
-    if (event.key === "3") setMode("spin");
-    if (event.key === "4") setMode("calm");
-    if (event.key === "5") setMode("storm");
+    if (event.key === "1") {
+      markInteraction();
+      setMode("pull");
+    }
+
+    if (event.key === "2") {
+      markInteraction();
+      setMode("push");
+    }
+
+    if (event.key === "3") {
+      markInteraction();
+      setMode("spin");
+    }
+
+    if (event.key === "4") {
+      markInteraction();
+      setMode("calm");
+    }
+
+    if (event.key === "5") {
+      markInteraction();
+      setMode("storm");
+    }
 
     if (event.key === " ") {
       event.preventDefault();
       setGesture("Pulse wave");
+      markInteraction();
+
       explode(
         state.pointer.x || state.width / 2,
         state.pointer.y || state.height / 2,
@@ -132,6 +169,8 @@ export function bindInputControls() {
 
     if (key === "i") {
       setGesture("Deep collapse");
+      markInteraction();
+
       implode(
         state.pointer.x || state.width / 2,
         state.pointer.y || state.height / 2,
@@ -141,6 +180,7 @@ export function bindInputControls() {
 
     if (key === "r") {
       setGesture("Reforming");
+      markInteraction();
       resetField();
     }
 
