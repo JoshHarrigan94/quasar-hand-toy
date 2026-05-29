@@ -20,8 +20,8 @@ body::before {
   position: fixed;
   inset: 0;
   background:
-    radial-gradient(circle at 50% 45%, rgba(125, 211, 252, 0.028), transparent 40%),
-    radial-gradient(circle at 64% 72%, rgba(168, 85, 247, 0.018), transparent 36%),
+    radial-gradient(circle at 50% 45%, rgba(125, 211, 252, 0.024), transparent 42%),
+    radial-gradient(circle at 64% 72%, rgba(168, 85, 247, 0.016), transparent 36%),
     linear-gradient(135deg, #000, #010104);
   pointer-events: none;
 }
@@ -52,7 +52,7 @@ canvas {
 }
 
 #cameraFeed.active {
-  opacity: .28;
+  opacity: .26;
 }
 
 .ui-toggle {
@@ -62,8 +62,8 @@ canvas {
   z-index: 20;
 
   border: 1px solid rgba(255,255,255,.08);
-  background: rgba(0,0,0,.3);
-  color: rgba(255,255,255,.72);
+  background: rgba(0,0,0,.28);
+  color: rgba(255,255,255,.68);
 
   border-radius: 999px;
   padding: 9px 13px;
@@ -95,14 +95,11 @@ canvas {
   top: 58px;
   left: 16px;
   right: 16px;
-
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
   gap: 14px;
-
   pointer-events: none;
-
   opacity: 1;
   transform: translateY(0);
   transition:
@@ -116,72 +113,81 @@ canvas {
   pointer-events: none;
 }
 
-.brand {
-  max-width: 285px;
-  padding: 12px 14px;
-  border-radius: 22px;
-
-  background: rgba(0,0,0,.2);
-  border: 1px solid rgba(255,255,255,.04);
-  backdrop-filter: blur(18px);
+.observatory-card {
+  background: rgba(0,0,0,.23);
+  border: 1px solid rgba(255,255,255,.045);
+  backdrop-filter: blur(20px);
+  box-shadow: 0 20px 90px rgba(0,0,0,.36);
+  pointer-events: auto;
 }
 
-.brand h1 {
+.primary-readout {
+  width: min(360px, calc(100vw - 32px));
+  padding: 14px;
+  border-radius: 24px;
+}
+
+.control-readout {
+  width: min(430px, calc(100vw - 32px));
+  padding: 12px;
+  border-radius: 26px;
+}
+
+.readout-kicker,
+.section-label {
+  display: block;
+  margin-bottom: 7px;
+  font-size: 10px;
+  letter-spacing: .17em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,.28);
+}
+
+.primary-readout h1 {
   margin: 0;
-  font-size: 16px;
+  font-size: 17px;
   letter-spacing: .08em;
   font-weight: 600;
 }
 
-.brand p {
-  margin: 5px 0 0;
+.primary-readout p {
+  margin: 6px 0 14px;
   font-size: 12px;
+  line-height: 1.4;
   color: rgba(255,255,255,.44);
-  line-height: 1.35;
 }
 
-.gesture-card {
-  margin-top: 12px;
-  padding: 9px 10px;
-  border-radius: 15px;
-  background: rgba(255,255,255,.022);
-  border: 1px solid rgba(255,255,255,.035);
+.readout-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 9px;
 }
 
-.gesture-label {
+.readout-grid div {
+  padding: 9px;
+  border-radius: 14px;
+  background: rgba(255,255,255,.02);
+  border: 1px solid rgba(255,255,255,.032);
+  min-width: 0;
+}
+
+.readout-grid span {
   display: block;
   margin-bottom: 4px;
   font-size: 9px;
-  letter-spacing: .16em;
+  letter-spacing: .13em;
   text-transform: uppercase;
   color: rgba(255,255,255,.3);
 }
 
-#gestureText {
-  font-size: 13px;
+.readout-grid strong {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 12px;
   font-weight: 500;
   color: rgba(255,255,255,.72);
-}
-
-.panel {
-  width: min(430px, calc(100vw - 32px));
-  padding: 12px;
-  border-radius: 26px;
-
-  background: rgba(0,0,0,.24);
-  border: 1px solid rgba(255,255,255,.05);
-  backdrop-filter: blur(20px);
-  box-shadow: 0 20px 90px rgba(0,0,0,.36);
-
-  pointer-events: auto;
-}
-
-.section-label {
-  margin-bottom: 7px;
-  font-size: 10px;
-  letter-spacing: .16em;
-  text-transform: uppercase;
-  color: rgba(255,255,255,.28);
 }
 
 .controls,
@@ -197,13 +203,10 @@ button {
   border: 1px solid rgba(255,255,255,.085);
   background: rgba(255,255,255,.04);
   color: rgba(255,255,255,.72);
-
   border-radius: 999px;
   padding: 8px 12px;
-
   font-size: 12px;
   cursor: pointer;
-
   transition:
     transform .15s ease,
     background .15s ease,
@@ -257,45 +260,8 @@ button.active {
   box-shadow: 0 0 10px rgba(74,222,128,.42);
 }
 
-.gesture-help {
-  display: grid;
-  grid-template-columns: repeat(2,1fr);
-  gap: 8px;
-  margin-bottom: 13px;
-}
-
-.gesture-help div {
-  padding: 9px;
-  border-radius: 14px;
-  background: rgba(255,255,255,.02);
-  border: 1px solid rgba(255,255,255,.032);
-}
-
-.gesture-help strong {
-  display: block;
-  margin-bottom: 3px;
-  font-size: 12px;
-  color: rgba(255,255,255,.66);
-}
-
-.gesture-help span {
-  font-size: 11px;
-  color: rgba(255,255,255,.36);
-}
-
 .energy-wrap {
   margin-top: 5px;
-}
-
-.energy-label {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 7px;
-
-  font-size: 10px;
-  text-transform: uppercase;
-  letter-spacing: .12em;
-  color: rgba(255,255,255,.36);
 }
 
 .energy-track {
@@ -324,59 +290,63 @@ button.active {
   left: 50%;
   bottom: 16px;
   transform: translateX(-50%);
-
   max-width: calc(100% - 32px);
   padding: 9px 13px;
   border-radius: 999px;
-
-  background: rgba(0,0,0,.24);
+  background: rgba(0,0,0,.22);
   border: 1px solid rgba(255,255,255,.04);
   backdrop-filter: blur(16px);
-
-  color: rgba(255,255,255,.38);
+  color: rgba(255,255,255,.36);
   font-size: 11px;
   text-align: center;
-
   opacity: 1;
   transition: opacity .24s ease;
 }
 
-.hud.collapsed + .hint {
-  opacity: .42;
+.hud.collapsed ~ .hint {
+  opacity: .32;
 }
 
-@media (max-width: 900px) {
+/* Tablet */
+@media (max-width: 1024px) {
   .hud {
-    flex-direction: column;
-    top: 58px;
+    align-items: stretch;
   }
 
-  .panel {
-    width: min(430px, 100%);
+  .primary-readout {
+    width: min(330px, calc(100vw - 32px));
+  }
+
+  .control-readout {
+    width: min(390px, calc(100vw - 32px));
+  }
+}
+
+/* Phone / narrow tablet */
+@media (max-width: 820px) {
+  .hud {
+    top: auto;
+    left: 12px;
+    right: 12px;
+    bottom: 52px;
+    flex-direction: column;
+    justify-content: flex-end;
+    gap: 10px;
+  }
+
+  .primary-readout,
+  .control-readout {
+    width: 100%;
+    border-radius: 22px;
+  }
+
+  .readout-grid {
+    grid-template-columns: repeat(3, 1fr);
   }
 
   .controls,
   .utility-row {
     justify-content: flex-start;
-  }
-}
-
-@media (max-width: 760px) {
-  .hud {
-    left: 12px;
-    right: 12px;
-  }
-
-  .brand {
-    max-width: 100%;
-  }
-
-  .panel {
-    width: 100%;
-  }
-
-  .gesture-help {
-    grid-template-columns: 1fr;
   }
 
   .ui-toggle {
@@ -392,7 +362,42 @@ button.active {
   }
 
   .hint {
-    border-radius: 18px;
     bottom: 12px;
+    border-radius: 18px;
+  }
+}
+
+/* Small phone */
+@media (max-width: 520px) {
+  .primary-readout {
+    padding: 12px;
+  }
+
+  .control-readout {
+    padding: 11px;
+  }
+
+  .readout-grid {
+    grid-template-columns: 1fr;
+    gap: 7px;
+  }
+
+  .controls,
+  .utility-row {
+    gap: 6px;
+  }
+
+  button {
+    padding: 8px 10px;
+    font-size: 11px;
+  }
+
+  .primary-readout h1 {
+    font-size: 15px;
+  }
+
+  .primary-readout p {
+    font-size: 11px;
+    margin-bottom: 11px;
   }
 }
