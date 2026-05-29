@@ -1,5 +1,6 @@
 import { state } from "./state.js";
 import { CONFIG } from "./config.js";
+import { createParticles } from "./particles.js";
 
 function cacheDomElements() {
   state.ui.statusText = document.getElementById("statusText");
@@ -76,12 +77,17 @@ function startApplication() {
 
   resizeCanvas();
 
-  initialiseUi();
+createParticles();
+
+initialiseUi();
 
   console.log("🚀 Quasar Engine Started");
   console.log(state);
 
-  window.addEventListener("resize", resizeCanvas);
+  window.addEventListener("resize", () => {
+  resizeCanvas();
+  createParticles();
+});
 }
 
 startApplication();
