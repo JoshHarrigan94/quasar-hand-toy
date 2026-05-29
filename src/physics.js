@@ -251,13 +251,18 @@ function applyInfinityCorePhysics(particle, index) {
 
   const opennessBoost = 1 + Math.max(0, state.artifact.openness) * 0.22;
 
-  const pull = target.pull * particle.layerPull * particle.depth * pressureBoost;
+  const pull =
+  target.pull *
+  particle.layerPull *
+  particle.depth *
+  pressureBoost *
+  (0.85 + particle.pathBias * 0.35);
 
   particle.vx += nx * pull;
   particle.vy += ny * pull;
 
-  particle.vx += tx * target.orbit * particle.depth * opennessBoost;
-  particle.vy += ty * target.orbit * particle.depth * opennessBoost;
+  particle.vx += tx * target.orbit * particle.depth * opennessBoost * (0.8 + particle.pathBias * 0.45);
+particle.vy += ty * target.orbit * particle.depth * opennessBoost * (0.8 + particle.pathBias * 0.45);
 
   particle.vx *= target.drag;
   particle.vy *= target.drag;
