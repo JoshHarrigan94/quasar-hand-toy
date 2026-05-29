@@ -2,6 +2,7 @@ const canvas = document.getElementById("quasarCanvas");
 const ctx = canvas.getContext("2d");
 
 const statusText = document.getElementById("statusText");
+const gestureText = document.getElementById("gestureText");
 const energyText = document.getElementById("energyText");
 const energyFill = document.getElementById("energyFill");
 const resetBtn = document.getElementById("resetBtn");
@@ -29,6 +30,8 @@ let hands = null;
 let camera = null;
 let cameraActive = false;
 let handSeenAt = 0;
+let lastGesture = "Touch / Mouse";
+let lastAutoPowerAt = 0;
 
 const pointer = {
   x: 0,
@@ -40,6 +43,14 @@ const pointer = {
   active: false,
   down: false,
   source: "touch"
+};
+
+const handState = {
+  previousX: 0,
+  previousY: 0,
+  speed: 0,
+  stillFrames: 0,
+  lastSwipeAt: 0
 };
 
 const themes = {
@@ -125,23 +136,31 @@ function createParticles() {
   }
 }
 
-function setMode(nextMode) {
+function setMode(nextMode, silent = false) {
   mode = nextMode;
 
   document.querySelectorAll("button[data-mode]").forEach((button) => {
     button.classList.toggle("active", button.dataset.mode === mode);
   });
 
-  const labels = {
-    pull: "Gravity well engaged.",
-    push: "Repulsion field active.",
-    spin: "Orbital torque online.",
-    storm: "Storm field unstable.",
-    calm: "Stabilising particle flow."
-  };
+  if (!silent) {
+    const labels = {
+      pull: "Gravity well engaged.",
+      push: "Repulsion field active.",
+      spin: "Orbital torque online.",
+      storm: "Storm field unstable.",
+      calm: "Stabilising particle flow."
+    };
 
-  statusText.textContent = labels[mode] || "Bend the galaxy.";
-  pulseAt(pointer.x || width / 2, pointer.y || height / 2, 0.7);
+    statusText.textContent = labels[mode] || "Bend the galaxy.";
+    pulseAt(pointer.x || width / 2, pointer.y || height / 2, 0.7);
+  }
+}
+
+function setGesture(text) {
+  if (lastGesture === text) return;
+  lastGesture = text;
+  gestureText.textContent = text;
 }
 
 function setTheme(nextTheme) {
@@ -374,7 +393,7 @@ function drawCore() {
 function drawPointerGlow() {
   if (!pointer.active) return;
 
-  const radius = pointer.source === "hand" ? 145 : pointer.down ? 175 : 112;
+  const radius = pointer.source === "hand" ? 150 : pointer.down ? 175 : 112;
   const gradient = ctx.createRadialGradient(pointer.x, pointer.y, 0, pointer.x, pointer.y, radius);
 
   gradient.addColorStop(0, "rgba(255,255,255,0.28)");
@@ -388,9 +407,9 @@ function drawPointerGlow() {
 
   if (pointer.source === "hand") {
     ctx.beginPath();
-    ctx.strokeStyle = "rgba(255,255,255,0.5)";
-    ctx.lineWidth = 1.5;
-    ctx.arc(pointer.x, pointer.y, 12, 0, Math.PI * 2);
+    ctx.strokeStyle = pointer.down ? "rgba(255,255,255,0.85)" : "rgba(255,255,255,0.45)";
+    ctx.lineWidth = pointer.down ? 2.5 : 1.5;
+    ctx.arc(pointer.x, pointer.y, pointer.down ? 18 : 12, 0, Math.PI * 2);
     ctx.stroke();
   }
 }
@@ -452,8 +471,10 @@ function loop() {
 
   if (cameraActive && Date.now() - handSeenAt > 900 && pointer.source === "hand") {
     pointer.active = false;
+    pointer.down = false;
     handStatus.textContent = "Searching for hand...";
     handStatus.classList.remove("active");
+    setGesture("Searching...");
   }
 
   drawCore();
@@ -494,14 +515,94 @@ function updatePointer(clientX, clientY, source = "touch") {
   }
 }
 
-function calculateHandPinch(landmarks) {
-  const thumb = landmarks[4];
-  const index = landmarks[8];
+function distance(a, b) {
+  return Math.hypot(a.x - b.x, a.y - b.y);
+}
 
-  const dx = thumb.x - index.x;
-  const dy = thumb.y - index.y;
+function countExtendedFingers(landmarks) {
+  const tips = [8, 12, 16, 20];
+  const pips = [6, 10, 14, 18];
 
-  return Math.hypot(dx, dy);
+  let count = 0;
+
+  for (let i = 0; i < tips.length; i++) {
+    if (landmarks[tips[i]].y < landmarks[pips[i]].y) {
+      count++;
+    }
+  }
+
+  return count;
+}
+
+function interpretHandGesture(landmarks, mappedX, mappedY) {
+  const thumbTip = landmarks[4];
+  const indexTip = landmarks[8];
+  const wrist = landmarks[0];
+
+  const pinchDistance = distance(thumbTip, indexTip);
+  const extendedFingers = countExtendedFingers(landmarks);
+
+  const dx = mappedX - (handState.previousX || mappedX);
+  const dy = mappedY - (handState.previousY || mappedY);
+  const speed = Math.hypot(dx, dy);
+
+  handState.speed = speed;
+  handState.previousX = mappedX;
+  handState.previousY = mappedY;
+
+  if (speed < 3) {
+    handState.stillFrames++;
+  } else {
+    handState.stillFrames = 0;
+  }
+
+  const wristToIndex = distance(wrist, indexTip);
+  const isPinching = pinchDistance < 0.055;
+  const isOpenHand = extendedFingers >= 4;
+  const isFistLike = extendedFingers <= 1 && wristToIndex < 0.28;
+  const isSwipe = speed > 42;
+
+  if (isSwipe && Date.now() - handState.lastSwipeAt > 500) {
+    handState.lastSwipeAt = Date.now();
+    setGesture("Fast swipe");
+    setMode("storm", true);
+    fling();
+    pulseAt(mappedX, mappedY, 1);
+    return "swipe";
+  }
+
+  if (isPinching) {
+    setGesture("Pinch / Grab");
+    setMode("pull", true);
+    pointer.down = true;
+    return "pinch";
+  }
+
+  if (isFistLike && Date.now() - lastAutoPowerAt > 900) {
+    lastAutoPowerAt = Date.now();
+    setGesture("Fist / Smash");
+    explode(mappedX, mappedY, 16);
+    pointer.down = false;
+    return "fist";
+  }
+
+  if (handState.stillFrames > 32) {
+    setGesture("Still / Calm");
+    setMode("calm", true);
+    pointer.down = false;
+    return "still";
+  }
+
+  if (isOpenHand) {
+    setGesture("Open hand / Push");
+    setMode("push", true);
+    pointer.down = false;
+    return "open";
+  }
+
+  setGesture("Point / Guide");
+  pointer.down = false;
+  return "point";
 }
 
 function handleHandResults(results) {
@@ -511,22 +612,16 @@ function handleHandResults(results) {
 
   const landmarks = results.multiHandLandmarks[0];
   const indexTip = landmarks[8];
-  const pinchDistance = calculateHandPinch(landmarks);
 
   const mappedX = (1 - indexTip.x) * width;
   const mappedY = indexTip.y * height;
 
   updatePointer(mappedX, mappedY, "hand");
 
-  const isPinching = pinchDistance < 0.055;
-  pointer.down = isPinching;
-
-  if (isPinching && mode !== "pull") {
-    setMode("pull");
-  }
+  const gesture = interpretHandGesture(landmarks, mappedX, mappedY);
 
   handSeenAt = Date.now();
-  handStatus.textContent = isPinching ? "Pinch detected: pulling" : "Hand detected";
+  handStatus.textContent = `Hand detected: ${gesture}`;
   handStatus.classList.add("active");
 }
 
@@ -573,6 +668,7 @@ async function startCamera() {
     cameraFeed.classList.add("active");
     handStatus.textContent = "Searching for hand...";
     statusText.textContent = "Camera active. Show your hand.";
+    setGesture("Searching...");
   } catch (error) {
     console.error(error);
     statusText.textContent = "Camera permission blocked.";
@@ -584,11 +680,13 @@ window.addEventListener("resize", resize);
 
 window.addEventListener("mousemove", (event) => {
   if (pointer.source === "hand" && cameraActive) return;
+  setGesture("Mouse guide");
   updatePointer(event.clientX, event.clientY, "mouse");
 });
 
 window.addEventListener("mousedown", (event) => {
   if (pointer.source === "hand" && cameraActive) return;
+  setGesture("Mouse pull");
   pointer.down = true;
   updatePointer(event.clientX, event.clientY, "mouse");
 });
@@ -606,6 +704,7 @@ window.addEventListener("mouseleave", () => {
 });
 
 window.addEventListener("dblclick", (event) => {
+  setGesture("Explosion");
   explode(event.clientX, event.clientY, 18);
 });
 
@@ -619,10 +718,12 @@ window.addEventListener(
 
     const now = Date.now();
 
+    setGesture("Touch pull");
     updatePointer(touch.clientX, touch.clientY, "touch");
     pointer.down = true;
 
     if (now - lastTap < 280) {
+      setGesture("Touch explosion");
       explode(touch.clientX, touch.clientY, 18);
     }
 
@@ -653,6 +754,7 @@ window.addEventListener("touchend", () => {
 document.querySelectorAll("button[data-mode]").forEach((button) => {
   button.addEventListener("click", () => {
     setMode(button.dataset.mode);
+    setGesture(`${button.textContent} mode`);
   });
 });
 
@@ -669,12 +771,14 @@ resetBtn.addEventListener("click", () => {
   energy = 100;
   pulseAt(width / 2, height / 2, 1.2);
   statusText.textContent = "Particle field reset.";
+  setGesture("Reset field");
 });
 
 pauseBtn.addEventListener("click", () => {
   paused = !paused;
   pauseBtn.textContent = paused ? "Resume" : "Pause";
   statusText.textContent = paused ? "Simulation paused." : "Simulation resumed.";
+  setGesture(paused ? "Paused" : "Resumed");
 });
 
 window.addEventListener("keydown", (event) => {
@@ -685,10 +789,12 @@ window.addEventListener("keydown", (event) => {
   if (event.key === "5") setMode("storm");
 
   if (event.key === " ") {
+    setGesture("Explosion");
     explode(pointer.x || width / 2, pointer.y || height / 2, 18);
   }
 
   if (event.key.toLowerCase() === "i") {
+    setGesture("Implosion");
     implode(pointer.x || width / 2, pointer.y || height / 2, 12);
   }
 
@@ -696,6 +802,7 @@ window.addEventListener("keydown", (event) => {
     createParticles();
     energy = 100;
     pulseAt(width / 2, height / 2, 1.2);
+    setGesture("Reset field");
   }
 });
 
