@@ -6,6 +6,9 @@ const energyText = document.getElementById("energyText");
 const energyFill = document.getElementById("energyFill");
 const resetBtn = document.getElementById("resetBtn");
 const pauseBtn = document.getElementById("pauseBtn");
+const cameraBtn = document.getElementById("cameraBtn");
+const cameraFeed = document.getElementById("cameraFeed");
+const handStatus = document.getElementById("handStatus");
 
 let width = 0;
 let height = 0;
@@ -22,6 +25,11 @@ let lastTap = 0;
 let paused = false;
 let energy = 100;
 
+let hands = null;
+let camera = null;
+let cameraActive = false;
+let handSeenAt = 0;
+
 const pointer = {
   x: 0,
   y: 0,
@@ -30,7 +38,8 @@ const pointer = {
   vx: 0,
   vy: 0,
   active: false,
-  down: false
+  down: false,
+  source: "touch"
 };
 
 const themes = {
@@ -365,17 +374,25 @@ function drawCore() {
 function drawPointerGlow() {
   if (!pointer.active) return;
 
-  const radius = pointer.down ? 175 : 112;
+  const radius = pointer.source === "hand" ? 145 : pointer.down ? 175 : 112;
   const gradient = ctx.createRadialGradient(pointer.x, pointer.y, 0, pointer.x, pointer.y, radius);
 
-  gradient.addColorStop(0, "rgba(255,255,255,0.26)");
-  gradient.addColorStop(0.22, "rgba(125,211,252,0.16)");
+  gradient.addColorStop(0, "rgba(255,255,255,0.28)");
+  gradient.addColorStop(0.22, "rgba(125,211,252,0.17)");
   gradient.addColorStop(1, "rgba(0,0,0,0)");
 
   ctx.fillStyle = gradient;
   ctx.beginPath();
   ctx.arc(pointer.x, pointer.y, radius, 0, Math.PI * 2);
   ctx.fill();
+
+  if (pointer.source === "hand") {
+    ctx.beginPath();
+    ctx.strokeStyle = "rgba(255,255,255,0.5)";
+    ctx.lineWidth = 1.5;
+    ctx.arc(pointer.x, pointer.y, 12, 0, Math.PI * 2);
+    ctx.stroke();
+  }
 }
 
 function drawShockwaves() {
@@ -433,6 +450,12 @@ function loop() {
   updateEnergyUI();
   spawnComet();
 
+  if (cameraActive && Date.now() - handSeenAt > 900 && pointer.source === "hand") {
+    pointer.active = false;
+    handStatus.textContent = "Searching for hand...";
+    handStatus.classList.remove("active");
+  }
+
   drawCore();
   drawPointerGlow();
   drawShockwaves();
@@ -453,7 +476,7 @@ function loop() {
   requestAnimationFrame(loop);
 }
 
-function updatePointer(clientX, clientY) {
+function updatePointer(clientX, clientY, source = "touch") {
   pointer.prevX = pointer.x || clientX;
   pointer.prevY = pointer.y || clientY;
 
@@ -464,29 +487,120 @@ function updatePointer(clientX, clientY) {
   pointer.vy = pointer.y - pointer.prevY;
 
   pointer.active = true;
+  pointer.source = source;
 
   if (pointer.down && mode !== "calm") {
     spendEnergy(0.04);
   }
 }
 
+function calculateHandPinch(landmarks) {
+  const thumb = landmarks[4];
+  const index = landmarks[8];
+
+  const dx = thumb.x - index.x;
+  const dy = thumb.y - index.y;
+
+  return Math.hypot(dx, dy);
+}
+
+function handleHandResults(results) {
+  if (!results.multiHandLandmarks || !results.multiHandLandmarks.length) {
+    return;
+  }
+
+  const landmarks = results.multiHandLandmarks[0];
+  const indexTip = landmarks[8];
+  const pinchDistance = calculateHandPinch(landmarks);
+
+  const mappedX = (1 - indexTip.x) * width;
+  const mappedY = indexTip.y * height;
+
+  updatePointer(mappedX, mappedY, "hand");
+
+  const isPinching = pinchDistance < 0.055;
+  pointer.down = isPinching;
+
+  if (isPinching && mode !== "pull") {
+    setMode("pull");
+  }
+
+  handSeenAt = Date.now();
+  handStatus.textContent = isPinching ? "Pinch detected: pulling" : "Hand detected";
+  handStatus.classList.add("active");
+}
+
+async function startCamera() {
+  if (cameraActive) return;
+
+  if (!window.Hands || !window.Camera) {
+    statusText.textContent = "Hand tracking library not loaded.";
+    handStatus.textContent = "MediaPipe unavailable";
+    return;
+  }
+
+  statusText.textContent = "Starting camera...";
+
+  hands = new Hands({
+    locateFile: (file) => {
+      return `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`;
+    }
+  });
+
+  hands.setOptions({
+    maxNumHands: 1,
+    modelComplexity: 1,
+    minDetectionConfidence: 0.65,
+    minTrackingConfidence: 0.65
+  });
+
+  hands.onResults(handleHandResults);
+
+  camera = new Camera(cameraFeed, {
+    onFrame: async () => {
+      await hands.send({ image: cameraFeed });
+    },
+    width: 640,
+    height: 480
+  });
+
+  try {
+    await camera.start();
+
+    cameraActive = true;
+    cameraBtn.classList.add("active");
+    cameraBtn.textContent = "Camera On";
+    cameraFeed.classList.add("active");
+    handStatus.textContent = "Searching for hand...";
+    statusText.textContent = "Camera active. Show your hand.";
+  } catch (error) {
+    console.error(error);
+    statusText.textContent = "Camera permission blocked.";
+    handStatus.textContent = "Camera unavailable";
+  }
+}
+
 window.addEventListener("resize", resize);
 
 window.addEventListener("mousemove", (event) => {
-  updatePointer(event.clientX, event.clientY);
+  if (pointer.source === "hand" && cameraActive) return;
+  updatePointer(event.clientX, event.clientY, "mouse");
 });
 
 window.addEventListener("mousedown", (event) => {
+  if (pointer.source === "hand" && cameraActive) return;
   pointer.down = true;
-  updatePointer(event.clientX, event.clientY);
+  updatePointer(event.clientX, event.clientY, "mouse");
 });
 
 window.addEventListener("mouseup", () => {
+  if (pointer.source === "hand" && cameraActive) return;
   pointer.down = false;
   fling();
 });
 
 window.addEventListener("mouseleave", () => {
+  if (pointer.source === "hand" && cameraActive) return;
   pointer.active = false;
   pointer.down = false;
 });
@@ -498,12 +612,14 @@ window.addEventListener("dblclick", (event) => {
 window.addEventListener(
   "touchstart",
   (event) => {
+    if (pointer.source === "hand" && cameraActive) return;
+
     const touch = event.touches[0];
     if (!touch) return;
 
     const now = Date.now();
 
-    updatePointer(touch.clientX, touch.clientY);
+    updatePointer(touch.clientX, touch.clientY, "touch");
     pointer.down = true;
 
     if (now - lastTap < 280) {
@@ -518,14 +634,18 @@ window.addEventListener(
 window.addEventListener(
   "touchmove",
   (event) => {
+    if (pointer.source === "hand" && cameraActive) return;
+
     const touch = event.touches[0];
     if (!touch) return;
-    updatePointer(touch.clientX, touch.clientY);
+
+    updatePointer(touch.clientX, touch.clientY, "touch");
   },
   { passive: true }
 );
 
 window.addEventListener("touchend", () => {
+  if (pointer.source === "hand" && cameraActive) return;
   pointer.down = false;
   fling();
 });
@@ -541,6 +661,8 @@ document.querySelectorAll("button[data-theme]").forEach((button) => {
     setTheme(button.dataset.theme);
   });
 });
+
+cameraBtn.addEventListener("click", startCamera);
 
 resetBtn.addEventListener("click", () => {
   createParticles();
