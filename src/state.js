@@ -1,5 +1,3 @@
-import { THEMES } from "./themes.js";
-
 export const state = {
   canvas: null,
   ctx: null,
@@ -10,9 +8,8 @@ export const state = {
 
   paused: false,
 
-  hue: THEMES.quasar.baseHue,
+  hue: 190,
 
-  theme: "quasar",
   mode: "pull",
 
   energy: 100,
