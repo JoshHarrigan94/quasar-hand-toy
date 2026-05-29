@@ -1,6 +1,7 @@
 import { state } from "./state.js";
 import { CONFIG } from "./config.js";
 import { respawnParticleNearCore } from "./particles.js";
+import { getOrbitalTargetForParticle } from "./cosmicStructures.js";
 
 export function pulseAt(x, y, strength = 1) {
   state.shockwaves.push({
@@ -105,7 +106,7 @@ export function spawnComet() {
   });
 }
 
-export function updateParticlePhysics(particle) {
+function applyCoreGalaxyPhysics(particle) {
   const cx = state.width / 2;
   const cy = state.height / 2;
 
@@ -141,6 +142,40 @@ export function updateParticlePhysics(particle) {
     ty *
     CONFIG.physics.orbitStrength *
     particle.depth;
+}
+
+function applyStructurePhysics(particle, index) {
+  const target = getOrbitalTargetForParticle(particle, index);
+
+  if (!target) return;
+
+  const dx = target.x - particle.x;
+  const dy = target.y - particle.y;
+
+  const dist = Math.hypot(dx, dy) || 1;
+
+  const nx = dx / dist;
+  const ny = dy / dist;
+
+  const tx = -ny;
+  const ty = nx;
+
+  const pull =
+    target.gravity *
+    particle.structurePull *
+    particle.depth;
+
+  particle.vx += nx * pull;
+  particle.vy += ny * pull;
+
+  particle.vx += tx * target.orbitStrength * particle.depth * 0.42;
+  particle.vy += ty * target.orbitStrength * particle.depth * 0.42;
+}
+
+export function updateParticlePhysics(particle, index) {
+  applyCoreGalaxyPhysics(particle);
+
+  applyStructurePhysics(particle, index);
 
   applyPointerPhysics(particle);
 
@@ -222,9 +257,9 @@ export function updatePhysics() {
   recoverEnergy();
   spawnComet();
 
-  for (const particle of state.particles) {
-    updateParticlePhysics(particle);
-  }
+  state.particles.forEach((particle, index) => {
+    updateParticlePhysics(particle, index);
+  });
 
   state.pointer.vx *= 0.88;
   state.pointer.vy *= 0.88;
