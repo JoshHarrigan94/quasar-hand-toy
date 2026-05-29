@@ -19,9 +19,9 @@ export const GRAVITY_PATHS = {
 export function assignCoreLayer(index, total) {
   const t = index / total;
 
-  if (t < 0.12) return CORE_LAYERS.CORE;
-  if (t < 0.38) return CORE_LAYERS.INNER;
-  if (t < 0.72) return CORE_LAYERS.OUTER;
+  if (t < 0.1) return CORE_LAYERS.CORE;
+  if (t < 0.34) return CORE_LAYERS.INNER;
+  if (t < 0.66) return CORE_LAYERS.OUTER;
 
   return CORE_LAYERS.HALO;
 }
@@ -29,11 +29,11 @@ export function assignCoreLayer(index, total) {
 export function assignGravityPath(index, total) {
   const t = index / total;
 
-  if (t < 0.16) return GRAVITY_PATHS.WELL;
-  if (t < 0.34) return GRAVITY_PATHS.TORUS;
-  if (t < 0.56) return GRAVITY_PATHS.INFINITY;
-  if (t < 0.72) return GRAVITY_PATHS.SINE;
-  if (t < 0.86) return GRAVITY_PATHS.PARABOLA;
+  if (t < 0.13) return GRAVITY_PATHS.WELL;
+  if (t < 0.31) return GRAVITY_PATHS.TORUS;
+  if (t < 0.54) return GRAVITY_PATHS.INFINITY;
+  if (t < 0.68) return GRAVITY_PATHS.SINE;
+  if (t < 0.82) return GRAVITY_PATHS.PARABOLA;
 
   return GRAVITY_PATHS.DEEP_FIELD;
 }
@@ -55,13 +55,14 @@ function getBaseValues(particle, index) {
   const cy = state.height / 2;
   const unit = Math.min(state.width, state.height);
 
-  const time = state.hue * 0.00058;
+  const time = state.hue * 0.00042;
   const band = particle.layerBand ?? 0.5;
+  const pathBand = particle.pathBand ?? band;
 
   const phase =
-    particle.layerPhase +
+    (particle.pathPhase ?? particle.layerPhase) +
     time +
-    index * 0.00018;
+    index * 0.00012;
 
   return {
     cx,
@@ -69,120 +70,130 @@ function getBaseValues(particle, index) {
     unit,
     time,
     band,
+    pathBand,
     phase
   };
 }
 
 function getWellTarget(particle, index) {
-  const { cx, cy, unit, band, phase } = getBaseValues(particle, index);
+  const { cx, cy, unit, pathBand, phase } = getBaseValues(particle, index);
 
-  const radius = unit * (0.018 + band * 0.1);
+  const radius = unit * (0.012 + pathBand * 0.085);
 
   return {
-    x: cx + Math.cos(phase * 0.82) * radius,
-    y: cy + Math.sin(phase * 0.68) * radius * 0.62,
-    pull: 0.018,
-    orbit: 0.012,
-    drag: 0.996,
+    x: cx + Math.cos(phase * 0.7) * radius,
+    y: cy + Math.sin(phase * 0.55) * radius * 0.58,
+    pull: 0.014,
+    orbit: 0.008,
+    drag: 0.997,
     path: GRAVITY_PATHS.WELL
   };
 }
 
 function getTorusTarget(particle, index) {
-  const { cx, cy, unit, band, phase } = getBaseValues(particle, index);
+  const { cx, cy, unit, pathBand, phase } = getBaseValues(particle, index);
 
-  const majorRadius = unit * (0.2 + band * 0.2);
-  const minorRadius = unit * (0.018 + band * 0.034);
+  const majorRadius = unit * (0.22 + pathBand * 0.2);
+  const minorRadius = unit * (0.012 + pathBand * 0.028);
 
-  const tubePhase = phase * 1.8 + band * Math.PI * 2;
+  const tubePhase = phase * 1.15 + pathBand * Math.PI * 2;
 
   return {
     x:
       cx +
-      Math.cos(phase * 0.42) *
+      Math.cos(phase * 0.32) *
         (majorRadius + Math.cos(tubePhase) * minorRadius),
 
     y:
       cy +
-      Math.sin(phase * 0.42) *
-        (majorRadius * 0.36 + Math.sin(tubePhase) * minorRadius),
+      Math.sin(phase * 0.32) *
+        (majorRadius * 0.34 + Math.sin(tubePhase) * minorRadius),
 
-    pull: 0.0078,
-    orbit: 0.007,
-    drag: 0.995,
+    pull: 0.0058,
+    orbit: 0.0045,
+    drag: 0.997,
     path: GRAVITY_PATHS.TORUS
   };
 }
 
 function getInfinityTarget(particle, index) {
-  const { cx, cy, unit, band, phase } = getBaseValues(particle, index);
+  const { cx, cy, unit, pathBand, phase } = getBaseValues(particle, index);
 
-  const scale = unit * (0.18 + band * 0.21);
-  const t = phase * 0.44;
+  const scale = unit * (0.2 + pathBand * 0.24);
+  const t = phase * 0.32;
 
   const denominator = 1 + Math.sin(t) * Math.sin(t);
 
+  const tilt = 0.06;
+  const rawX = (scale * Math.cos(t)) / denominator;
+  const rawY = (scale * Math.sin(t) * Math.cos(t) * 0.56) / denominator;
+
   return {
-    x: cx + (scale * Math.cos(t)) / denominator,
-    y: cy + (scale * Math.sin(t) * Math.cos(t) * 0.58) / denominator,
-    pull: 0.0085,
-    orbit: 0.0085,
-    drag: 0.995,
+    x: cx + rawX * Math.cos(tilt) - rawY * Math.sin(tilt),
+    y: cy + rawX * Math.sin(tilt) + rawY * Math.cos(tilt),
+    pull: 0.0066,
+    orbit: 0.0062,
+    drag: 0.997,
     path: GRAVITY_PATHS.INFINITY
   };
 }
 
 function getSineTarget(particle, index) {
-  const { cx, cy, unit, band, phase } = getBaseValues(particle, index);
+  const { cx, cy, unit, pathBand, phase } = getBaseValues(particle, index);
 
-  const width = unit * (0.28 + band * 0.42);
-  const amplitude = unit * (0.04 + band * 0.085);
+  const width = unit * (0.32 + pathBand * 0.48);
+  const amplitude = unit * (0.035 + pathBand * 0.075);
 
-  const t = (Math.sin(phase * 0.24) + 1) / 2;
+  const t = (Math.sin(phase * 0.18) + 1) / 2;
+
+  const rawX = -width / 2 + width * t;
+  const rawY = Math.sin(t * Math.PI * 2 + phase * 0.12) * amplitude;
+
+  const tilt = -0.08;
 
   return {
-    x: cx - width / 2 + width * t,
-    y: cy + Math.sin(t * Math.PI * 2 + phase * 0.18) * amplitude,
-    pull: 0.0055,
-    orbit: 0.0055,
-    drag: 0.996,
+    x: cx + rawX * Math.cos(tilt) - rawY * Math.sin(tilt),
+    y: cy + rawX * Math.sin(tilt) + rawY * Math.cos(tilt),
+    pull: 0.0041,
+    orbit: 0.0038,
+    drag: 0.998,
     path: GRAVITY_PATHS.SINE
   };
 }
 
 function getParabolaTarget(particle, index) {
-  const { cx, cy, unit, band, phase } = getBaseValues(particle, index);
+  const { cx, cy, unit, pathBand, phase } = getBaseValues(particle, index);
 
-  const span = unit * (0.28 + band * 0.4);
-  const depth = unit * (0.045 + band * 0.12);
+  const span = unit * (0.32 + pathBand * 0.46);
+  const depth = unit * (0.04 + pathBand * 0.11);
 
-  const t = Math.sin(phase * 0.22);
+  const t = Math.sin(phase * 0.16);
   const rawX = t * span;
-  const rawY = (t * t - 0.42) * depth;
+  const rawY = (t * t - 0.46) * depth;
 
-  const tilt = -0.16;
+  const tilt = -0.18;
 
   return {
     x: cx + rawX * Math.cos(tilt) - rawY * Math.sin(tilt),
     y: cy + rawX * Math.sin(tilt) + rawY * Math.cos(tilt),
-    pull: 0.0047,
-    orbit: 0.0048,
-    drag: 0.996,
+    pull: 0.0035,
+    orbit: 0.003,
+    drag: 0.998,
     path: GRAVITY_PATHS.PARABOLA
   };
 }
 
 function getDeepFieldTarget(particle, index) {
-  const { cx, cy, unit, band, phase } = getBaseValues(particle, index);
+  const { cx, cy, unit, pathBand, phase } = getBaseValues(particle, index);
 
-  const radius = unit * (0.62 + band * 0.82);
+  const radius = unit * (0.7 + pathBand * 0.9);
 
   return {
-    x: cx + Math.cos(phase * 0.12) * radius,
-    y: cy + Math.sin(phase * 0.12) * radius * 0.56,
-    pull: 0.00075,
-    orbit: 0.0012,
-    drag: 0.998,
+    x: cx + Math.cos(phase * 0.08) * radius,
+    y: cy + Math.sin(phase * 0.08) * radius * 0.54,
+    pull: 0.00042,
+    orbit: 0.0008,
+    drag: 0.9985,
     path: GRAVITY_PATHS.DEEP_FIELD
   };
 }
