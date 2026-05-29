@@ -15,9 +15,15 @@
     <div class="brand">
       <h1>Quasar Toy</h1>
       <p id="statusText">Bend the galaxy.</p>
+
+      <div class="gesture-card">
+        <span class="gesture-label">Gesture</span>
+        <strong id="gestureText">Touch / Mouse</strong>
+      </div>
     </div>
 
     <div class="panel">
+      <div class="section-label">Powers</div>
       <div class="controls">
         <button data-mode="pull" class="active">Pull</button>
         <button data-mode="push">Push</button>
@@ -26,6 +32,7 @@
         <button data-mode="calm">Calm</button>
       </div>
 
+      <div class="section-label">Themes</div>
       <div class="controls">
         <button data-theme="quasar" class="active">Quasar</button>
         <button data-theme="ember">Ember</button>
@@ -43,6 +50,25 @@
         <span id="handStatus">Hand tracking off</span>
       </div>
 
+      <div class="gesture-help">
+        <div>
+          <strong>Open hand</strong>
+          <span>guide field</span>
+        </div>
+        <div>
+          <strong>Pinch</strong>
+          <span>grab / pull</span>
+        </div>
+        <div>
+          <strong>Fast swipe</strong>
+          <span>fling particles</span>
+        </div>
+        <div>
+          <strong>Hold still</strong>
+          <span>stabilise</span>
+        </div>
+      </div>
+
       <div class="energy-wrap">
         <div class="energy-label">
           <span>Energy</span>
@@ -56,7 +82,7 @@
   </div>
 
   <div class="hint">
-    Mouse/touch now · Camera next · 1 Pull · 2 Push · 3 Spin · 4 Calm · 5 Storm · Space Explode
+    Camera uses your index finger as the cursor · Pinch to grab · Space Explode · I Implode · R Reset
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
