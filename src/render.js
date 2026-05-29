@@ -3,6 +3,7 @@ import { CONFIG } from "./config.js";
 import { getTheme } from "./themes.js";
 import {
   getCosmicStructures,
+  getMassAnchors,
   resolveStructurePosition,
   STRUCTURE_TYPES
 } from "./cosmicStructures.js";
@@ -47,21 +48,26 @@ export function drawCosmicStructureGuides() {
     const position = resolveStructurePosition(structure, structures);
 
     if (structure.type === STRUCTURE_TYPES.STAR) {
-      drawSoftOrb(position.x, position.y, structure.radius * 2.3, "rgba(255,255,255,0.16)");
+      drawSoftOrb(position.x, position.y, structure.radius * 2.6, "rgba(255,255,255,0.18)");
+      drawOrbitLine(position.x, position.y, structure.radius * 4.2, 0.58, "rgba(255,255,255,0.05)");
     }
 
     if (structure.type === STRUCTURE_TYPES.PLANET) {
-      drawSoftOrb(position.x, position.y, structure.radius * 2, "rgba(125,211,252,0.11)");
+      drawSoftOrb(position.x, position.y, structure.radius * 2.1, "rgba(125,211,252,0.12)");
       drawOrbitLine(position.x, position.y, structure.radius * 2.6, 0.38, "rgba(125,211,252,0.08)");
     }
 
     if (structure.type === STRUCTURE_TYPES.MOON) {
-      drawSoftOrb(position.x, position.y, structure.radius * 1.8, "rgba(226,232,240,0.08)");
+      drawSoftOrb(position.x, position.y, structure.radius * 1.9, "rgba(226,232,240,0.09)");
+    }
+
+    if (structure.type === STRUCTURE_TYPES.BLACK_HOLE) {
+      drawBlackHole(position.x, position.y, structure.radius, structure.influenceRadius);
     }
 
     if (structure.type === STRUCTURE_TYPES.ASTEROID_BELT) {
       drawOrbitLine(position.x, position.y, structure.innerRadius, 0.48, "rgba(255,255,255,0.035)");
-      drawOrbitLine(position.x, position.y, structure.outerRadius, 0.48, "rgba(255,255,255,0.045)");
+      drawOrbitLine(position.x, position.y, structure.outerRadius, 0.48, "rgba(255,255,255,0.05)");
     }
 
     if (structure.type === STRUCTURE_TYPES.RING_SYSTEM) {
@@ -76,9 +82,47 @@ export function drawCosmicStructureGuides() {
         structure.innerRadius,
         structure.outerRadius,
         structure.tilt || 0,
-        "rgba(255,255,255,0.08)"
+        "rgba(255,255,255,0.095)"
       );
     }
+  }
+
+  ctx.restore();
+}
+
+export function drawMassAnchorFields() {
+  const ctx = state.ctx;
+  const anchors = getMassAnchors();
+
+  ctx.save();
+  ctx.globalCompositeOperation = "lighter";
+
+  for (const anchor of anchors) {
+    if (anchor.type === STRUCTURE_TYPES.BLACK_HOLE) continue;
+
+    const fieldRadius =
+      anchor.radius *
+      (anchor.type === STRUCTURE_TYPES.STAR ? 7.5 : 4.5);
+
+    const gradient = ctx.createRadialGradient(
+      anchor.x,
+      anchor.y,
+      0,
+      anchor.x,
+      anchor.y,
+      fieldRadius
+    );
+
+    const alpha = 0.035 + anchor.glow * 0.055;
+
+    gradient.addColorStop(0, `rgba(255,255,255,${alpha})`);
+    gradient.addColorStop(0.28, `rgba(125,211,252,${alpha * 0.65})`);
+    gradient.addColorStop(1, "rgba(0,0,0,0)");
+
+    ctx.fillStyle = gradient;
+    ctx.beginPath();
+    ctx.arc(anchor.x, anchor.y, fieldRadius, 0, Math.PI * 2);
+    ctx.fill();
   }
 
   ctx.restore();
@@ -95,6 +139,41 @@ function drawSoftOrb(x, y, radius, colour) {
   ctx.beginPath();
   ctx.arc(x, y, radius, 0, Math.PI * 2);
   ctx.fill();
+}
+
+function drawBlackHole(x, y, radius, influenceRadius) {
+  const ctx = state.ctx;
+
+  const halo = ctx.createRadialGradient(x, y, radius * 0.5, x, y, influenceRadius);
+
+  halo.addColorStop(0, "rgba(0,0,0,0.95)");
+  halo.addColorStop(0.12, "rgba(15,23,42,0.9)");
+  halo.addColorStop(0.2, "rgba(168,85,247,0.16)");
+  halo.addColorStop(0.42, "rgba(125,211,252,0.055)");
+  halo.addColorStop(1, "rgba(0,0,0,0)");
+
+  ctx.fillStyle = halo;
+  ctx.beginPath();
+  ctx.arc(x, y, influenceRadius, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.beginPath();
+  ctx.fillStyle = "rgba(0,0,0,0.98)";
+  ctx.arc(x, y, radius * 1.45, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.rotate(state.hue * 0.004);
+  ctx.scale(1, 0.28);
+
+  ctx.beginPath();
+  ctx.strokeStyle = "rgba(255,255,255,0.11)";
+  ctx.lineWidth = Math.max(1, radius * 0.5);
+  ctx.arc(0, 0, radius * 3.5, 0, Math.PI * 2);
+  ctx.stroke();
+
+  ctx.restore();
 }
 
 function drawOrbitLine(x, y, radius, compression, colour) {
@@ -167,6 +246,11 @@ export function drawParticle(particle) {
   if (particle.structureId === "asteroid-belt") {
     structureBoost = -18;
     sizeBoost = 0.78;
+  }
+
+  if (particle.structureId === "hidden-black-hole") {
+    structureBoost = 75;
+    sizeBoost = 0.82;
   }
 
   const particleHue =
@@ -314,6 +398,7 @@ export function renderFrame() {
   clearCanvas();
 
   drawCore();
+  drawMassAnchorFields();
   drawCosmicStructureGuides();
   drawPointerGlow();
   drawShockwaves();
