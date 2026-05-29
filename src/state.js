@@ -28,6 +28,12 @@ export const state = {
     stateLabel: "Dormant"
   },
 
+  interface: {
+    collapsed: false,
+    lastInteractionAt: 0,
+    autoCollapseMs: 10000
+  },
+
   cameraActive: false,
   handSeenAt: 0,
 
