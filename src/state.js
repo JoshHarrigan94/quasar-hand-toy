@@ -18,6 +18,16 @@ export const state = {
   shockwaves: [],
   comets: [],
 
+  artifact: {
+    awakeLevel: 0,
+    disturbance: 0,
+    pressure: 0,
+    openness: 0,
+    pulse: 0,
+    lastInteractionAt: 0,
+    stateLabel: "Dormant"
+  },
+
   cameraActive: false,
   handSeenAt: 0,
 
