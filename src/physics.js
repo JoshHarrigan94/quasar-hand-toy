@@ -1,7 +1,11 @@
 import { state } from "./state.js";
 import { CONFIG } from "./config.js";
 import { respawnParticleNearCore } from "./particles.js";
-import { getOrbitalTargetForParticle } from "./cosmicStructures.js";
+import {
+  getOrbitalTargetForParticle,
+  getMassAnchors,
+  STRUCTURE_TYPES
+} from "./cosmicStructures.js";
 
 export function pulseAt(x, y, strength = 1) {
   state.shockwaves.push({
@@ -35,7 +39,6 @@ export function explode(x = state.width / 2, y = state.height / 2, power = 16) {
   for (const particle of state.particles) {
     const dx = particle.x - x;
     const dy = particle.y - y;
-
     const dist = Math.hypot(dx, dy) || 1;
     const force = Math.min(power, 1100 / dist);
 
@@ -53,7 +56,6 @@ export function implode(x = state.width / 2, y = state.height / 2, power = 11) {
   for (const particle of state.particles) {
     const dx = x - particle.x;
     const dy = y - particle.y;
-
     const dist = Math.hypot(dx, dy) || 1;
     const force = Math.min(power, 850 / dist);
 
@@ -74,7 +76,6 @@ export function fling() {
   for (const particle of state.particles) {
     const dx = pointer.x - particle.x;
     const dy = pointer.y - particle.y;
-
     const dist = Math.hypot(dx, dy) || 1;
 
     if (dist < CONFIG.physics.flingRadius) {
@@ -94,13 +95,8 @@ export function spawnComet() {
   state.comets.push({
     x: fromLeft ? -60 : state.width + 60,
     y: Math.random() * state.height * 0.7,
-
-    vx: fromLeft
-      ? 7 + Math.random() * 5
-      : -7 - Math.random() * 5,
-
+    vx: fromLeft ? 7 + Math.random() * 5 : -7 - Math.random() * 5,
     vy: 1 + Math.random() * 2,
-
     life: 1,
     hueOffset: Math.random() * 80
   });
@@ -112,7 +108,6 @@ function applyCoreGalaxyPhysics(particle) {
 
   const dx = cx - particle.x;
   const dy = cy - particle.y;
-
   const dist = Math.hypot(dx, dy) || 1;
 
   const nx = dx / dist;
@@ -121,27 +116,11 @@ function applyCoreGalaxyPhysics(particle) {
   const tx = -ny;
   const ty = nx;
 
-  particle.vx +=
-    nx *
-    CONFIG.physics.coreGravity *
-    dist *
-    particle.depth;
+  particle.vx += nx * CONFIG.physics.coreGravity * dist * particle.depth;
+  particle.vy += ny * CONFIG.physics.coreGravity * dist * particle.depth;
 
-  particle.vy +=
-    ny *
-    CONFIG.physics.coreGravity *
-    dist *
-    particle.depth;
-
-  particle.vx +=
-    tx *
-    CONFIG.physics.orbitStrength *
-    particle.depth;
-
-  particle.vy +=
-    ty *
-    CONFIG.physics.orbitStrength *
-    particle.depth;
+  particle.vx += tx * CONFIG.physics.orbitStrength * particle.depth;
+  particle.vy += ty * CONFIG.physics.orbitStrength * particle.depth;
 }
 
 function applyStructurePhysics(particle, index) {
@@ -151,7 +130,6 @@ function applyStructurePhysics(particle, index) {
 
   const dx = target.x - particle.x;
   const dy = target.y - particle.y;
-
   const dist = Math.hypot(dx, dy) || 1;
 
   const nx = dx / dist;
@@ -160,10 +138,7 @@ function applyStructurePhysics(particle, index) {
   const tx = -ny;
   const ty = nx;
 
-  const pull =
-    target.gravity *
-    particle.structurePull *
-    particle.depth;
+  const pull = target.gravity * particle.structurePull * particle.depth;
 
   particle.vx += nx * pull;
   particle.vy += ny * pull;
@@ -172,11 +147,55 @@ function applyStructurePhysics(particle, index) {
   particle.vy += ty * target.orbitStrength * particle.depth * 0.42;
 }
 
+function applyMassAnchorPhysics(particle) {
+  const anchors = getMassAnchors();
+
+  for (const anchor of anchors) {
+    const dx = anchor.x - particle.x;
+    const dy = anchor.y - particle.y;
+    const dist = Math.hypot(dx, dy) || 1;
+
+    const influenceRadius =
+      anchor.influenceRadius ||
+      anchor.radius * (anchor.type === STRUCTURE_TYPES.STAR ? 8 : 5);
+
+    if (dist > influenceRadius) continue;
+
+    const influence = 1 - dist / influenceRadius;
+
+    const nx = dx / dist;
+    const ny = dy / dist;
+
+    const tx = -ny;
+    const ty = nx;
+
+    const massPull =
+      influence *
+      influence *
+      anchor.mass *
+      0.018 *
+      particle.depth;
+
+    particle.vx += nx * massPull;
+    particle.vy += ny * massPull;
+
+    particle.vx += tx * anchor.orbitStrength * influence * 0.65;
+    particle.vy += ty * anchor.orbitStrength * influence * 0.65;
+
+    if (anchor.type === STRUCTURE_TYPES.BLACK_HOLE && dist < anchor.radius * 1.6) {
+      particle.vx *= 0.65;
+      particle.vy *= 0.65;
+
+      particle.x += nx * 2;
+      particle.y += ny * 2;
+    }
+  }
+}
+
 export function updateParticlePhysics(particle, index) {
   applyCoreGalaxyPhysics(particle);
-
   applyStructurePhysics(particle, index);
-
+  applyMassAnchorPhysics(particle);
   applyPointerPhysics(particle);
 
   particle.pulse += 0.04;
@@ -206,13 +225,11 @@ function applyPointerPhysics(particle) {
 
   const pdx = pointer.x - particle.x;
   const pdy = pointer.y - particle.y;
-
   const pdist = Math.hypot(pdx, pdy) || 1;
 
   if (pdist > CONFIG.physics.pointerRadius) return;
 
   const influence = 1 - pdist / CONFIG.physics.pointerRadius;
-
   const energyScale = 0.45 + state.energy / CONFIG.energy.max;
 
   const force =
