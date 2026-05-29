@@ -3,18 +3,25 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Quasar Hand Toy</title>
+
+  <title>The Infinity Core</title>
+
   <link rel="stylesheet" href="style.css" />
 </head>
+
 <body>
   <canvas id="quasarCanvas"></canvas>
 
   <video id="cameraFeed" playsinline muted autoplay></video>
 
-  <div class="hud">
+  <button id="uiToggle" class="ui-toggle" aria-label="Toggle interface">
+    Observatory
+  </button>
+
+  <div id="interfaceShell" class="hud">
     <div class="brand">
-      <h1>Quasar Toy</h1>
-      <p id="statusText">Bend the galaxy.</p>
+      <h1>The Infinity Core</h1>
+      <p id="statusText">An impossible object suspended in the void.</p>
 
       <div class="gesture-card">
         <span class="gesture-label">Gesture</span>
@@ -23,21 +30,14 @@
     </div>
 
     <div class="panel">
-      <div class="section-label">Powers</div>
-      <div class="controls">
-        <button data-mode="pull" class="active">Pull</button>
-        <button data-mode="push">Push</button>
-        <button data-mode="spin">Spin</button>
-        <button data-mode="storm">Storm</button>
-        <button data-mode="calm">Calm</button>
-      </div>
+      <div class="section-label">Influence</div>
 
-      <div class="section-label">Themes</div>
       <div class="controls">
-        <button data-theme="quasar" class="active">Quasar</button>
-        <button data-theme="ember">Ember</button>
-        <button data-theme="ocean">Ocean</button>
-        <button data-theme="aurora">Aurora</button>
+        <button data-mode="pull" class="active">Collapse</button>
+        <button data-mode="push">Expand</button>
+        <button data-mode="spin">Rotate</button>
+        <button data-mode="storm">Disturb</button>
+        <button data-mode="calm">Stillness</button>
       </div>
 
       <div class="utility-row">
@@ -53,27 +53,31 @@
       <div class="gesture-help">
         <div>
           <strong>Open hand</strong>
-          <span>guide field</span>
+          <span>expand field</span>
         </div>
+
         <div>
           <strong>Pinch</strong>
-          <span>grab / pull</span>
+          <span>collapse matter</span>
         </div>
+
         <div>
           <strong>Fast swipe</strong>
-          <span>fling particles</span>
+          <span>gravity wave</span>
         </div>
+
         <div>
           <strong>Hold still</strong>
-          <span>stabilise</span>
+          <span>quiet the core</span>
         </div>
       </div>
 
       <div class="energy-wrap">
         <div class="energy-label">
-          <span>Energy</span>
+          <span>Influence</span>
           <span id="energyText">100%</span>
         </div>
+
         <div class="energy-track">
           <div id="energyFill"></div>
         </div>
@@ -82,7 +86,7 @@
   </div>
 
   <div class="hint">
-    Camera uses your index finger as the cursor · Pinch to grab · Space Explode · I Implode · R Reset
+    Collapse · Expand · Rotate · Disturb · Stillness
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
