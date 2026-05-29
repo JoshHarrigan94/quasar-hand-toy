@@ -8,6 +8,69 @@ import {
 } from "./cosmicStructures.js";
 import { getInfinityCoreTarget } from "./infinityCore.js";
 
+export function wakeArtifact({
+  awake = 0.08,
+  disturbance = 0.08,
+  pressure = 0,
+  openness = 0
+} = {}) {
+  state.artifact.awakeLevel = Math.min(
+    1,
+    state.artifact.awakeLevel + awake
+  );
+
+  state.artifact.disturbance = Math.min(
+    1,
+    state.artifact.disturbance + disturbance
+  );
+
+  state.artifact.pressure = Math.max(
+    -1,
+    Math.min(1, state.artifact.pressure + pressure)
+  );
+
+  state.artifact.openness = Math.max(
+    -1,
+    Math.min(1, state.artifact.openness + openness)
+  );
+
+  state.artifact.pulse = Math.min(1, state.artifact.pulse + 0.35);
+  state.artifact.lastInteractionAt = Date.now();
+}
+
+export function updateArtifactState() {
+  state.artifact.pulse *= 0.94;
+  state.artifact.disturbance *= 0.985;
+  state.artifact.pressure *= 0.982;
+  state.artifact.openness *= 0.985;
+
+  const timeSinceInteraction = Date.now() - state.artifact.lastInteractionAt;
+
+  if (timeSinceInteraction > 1800) {
+    state.artifact.awakeLevel *= 0.996;
+  }
+
+  if (state.mode === "calm") {
+    state.artifact.disturbance *= 0.97;
+    state.artifact.pressure *= 0.97;
+    state.artifact.openness *= 0.985;
+  }
+
+  if (state.artifact.disturbance > 0.72) {
+    state.artifact.stateLabel = "Unstable";
+  } else if (state.artifact.pressure > 0.45) {
+    state.artifact.stateLabel = "Compressed";
+  } else if (state.artifact.openness > 0.45) {
+    state.artifact.stateLabel = "Expanded";
+  } else if (state.artifact.awakeLevel > 0.55) {
+    state.artifact.stateLabel = "Awake";
+  } else if (state.artifact.awakeLevel > 0.18) {
+    state.artifact.stateLabel = "Listening";
+  } else {
+    state.artifact.stateLabel = "Dormant";
+  }
+}
+
 export function pulseAt(x, y, strength = 1) {
   state.shockwaves.push({
     x,
@@ -16,6 +79,11 @@ export function pulseAt(x, y, strength = 1) {
     alpha: 0.55 * strength,
     speed: 9 + strength * 8,
     type: "pulse"
+  });
+
+  wakeArtifact({
+    awake: 0.04 * strength,
+    disturbance: 0.025 * strength
   });
 }
 
@@ -27,6 +95,12 @@ export function gravityWaveAt(x, y, strength = 1) {
     alpha: 0.72 * strength,
     speed: 15 + strength * 10,
     type: "gravity-wave"
+  });
+
+  wakeArtifact({
+    awake: 0.12 * strength,
+    disturbance: 0.18 * strength,
+    pressure: 0.04 * strength
   });
 
   for (const particle of state.particles) {
@@ -85,6 +159,14 @@ export function implode(x = state.width / 2, y = state.height / 2, power = 12) {
   if (state.energy < CONFIG.energy.implodeCost) return;
 
   spendEnergy(CONFIG.energy.implodeCost);
+
+  wakeArtifact({
+    awake: 0.1,
+    disturbance: 0.08,
+    pressure: 0.22,
+    openness: -0.08
+  });
+
   pulseAt(x, y, 0.9);
 
   for (const particle of state.particles) {
@@ -105,7 +187,10 @@ export function fling() {
   if (speed < 12 || state.energy < CONFIG.energy.flingCost) return;
 
   spendEnergy(CONFIG.energy.flingCost);
-  gravityWaveAt(pointer.x, pointer.y, Math.min(1.4, speed / 34));
+
+  const waveStrength = Math.min(1.4, speed / 34);
+
+  gravityWaveAt(pointer.x, pointer.y, waveStrength);
 
   for (const particle of state.particles) {
     const dx = pointer.x - particle.x;
@@ -150,11 +235,17 @@ function applyCoreGalaxyPhysics(particle) {
   const tx = -ny;
   const ty = nx;
 
-  particle.vx += nx * CONFIG.physics.coreGravity * dist * particle.depth * 0.55;
-  particle.vy += ny * CONFIG.physics.coreGravity * dist * particle.depth * 0.55;
+  const awakeBoost = 1 + state.artifact.awakeLevel * 0.45;
+  const disturbanceDrag = 1 - state.artifact.disturbance * 0.012;
 
-  particle.vx += tx * CONFIG.physics.orbitStrength * particle.depth * 0.72;
-  particle.vy += ty * CONFIG.physics.orbitStrength * particle.depth * 0.72;
+  particle.vx += nx * CONFIG.physics.coreGravity * dist * particle.depth * 0.55 * awakeBoost;
+  particle.vy += ny * CONFIG.physics.coreGravity * dist * particle.depth * 0.55 * awakeBoost;
+
+  particle.vx += tx * CONFIG.physics.orbitStrength * particle.depth * 0.72 * awakeBoost;
+  particle.vy += ty * CONFIG.physics.orbitStrength * particle.depth * 0.72 * awakeBoost;
+
+  particle.vx *= disturbanceDrag;
+  particle.vy *= disturbanceDrag;
 }
 
 function applyInfinityCorePhysics(particle, index) {
@@ -171,13 +262,26 @@ function applyInfinityCorePhysics(particle, index) {
   const tx = -ny;
   const ty = nx;
 
-  const pull = target.pull * particle.layerPull * particle.depth;
+  const pressureBoost =
+    1 +
+    Math.max(0, state.artifact.pressure) * 0.4 -
+    Math.max(0, state.artifact.openness) * 0.18;
+
+  const opennessBoost =
+    1 +
+    Math.max(0, state.artifact.openness) * 0.3;
+
+  const pull =
+    target.pull *
+    particle.layerPull *
+    particle.depth *
+    pressureBoost;
 
   particle.vx += nx * pull;
   particle.vy += ny * pull;
 
-  particle.vx += tx * target.orbit * particle.depth;
-  particle.vy += ty * target.orbit * particle.depth;
+  particle.vx += tx * target.orbit * particle.depth * opennessBoost;
+  particle.vy += ty * target.orbit * particle.depth * opennessBoost;
 
   particle.vx *= target.drag;
   particle.vy *= target.drag;
@@ -274,21 +378,47 @@ function applyPointerPhysics(particle) {
   const py = pdy / pdist;
 
   if (state.mode === "pull") {
+    wakeArtifact({
+      awake: 0.0008,
+      disturbance: 0.0004,
+      pressure: 0.0009,
+      openness: -0.0002
+    });
+
     particle.vx += px * force * 1.05;
     particle.vy += py * force * 1.05;
   }
 
   if (state.mode === "push") {
+    wakeArtifact({
+      awake: 0.0007,
+      disturbance: 0.00035,
+      pressure: -0.00015,
+      openness: 0.0008
+    });
+
     particle.vx -= px * force * 1.32;
     particle.vy -= py * force * 1.32;
   }
 
   if (state.mode === "spin") {
+    wakeArtifact({
+      awake: 0.0007,
+      disturbance: 0.00045,
+      openness: 0.0002
+    });
+
     particle.vx += -py * force * 1.8;
     particle.vy += px * force * 1.8;
   }
 
   if (state.mode === "storm") {
+    wakeArtifact({
+      awake: 0.001,
+      disturbance: 0.0011,
+      pressure: 0.00025
+    });
+
     particle.vx += -py * force * 1.1;
     particle.vy += px * force * 1.1;
     particle.vx -= px * force * 0.9;
@@ -308,7 +438,7 @@ export function updateParticlePhysics(particle, index) {
   applyMassAnchorPhysics(particle);
   applyPointerPhysics(particle);
 
-  particle.pulse += 0.025;
+  particle.pulse += 0.025 + state.artifact.awakeLevel * 0.018;
 
   particle.vx *= CONFIG.physics.drag;
   particle.vy *= CONFIG.physics.drag;
@@ -330,6 +460,7 @@ export function updateParticlePhysics(particle, index) {
 
 export function updatePhysics() {
   recoverEnergy();
+  updateArtifactState();
   spawnComet();
 
   state.particles.forEach((particle, index) => {
