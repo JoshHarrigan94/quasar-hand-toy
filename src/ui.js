@@ -11,23 +11,30 @@ export function setMode(nextMode, silent = false) {
   });
 
   if (!silent) {
-    const labels = {
-      pull: "Collapse field engaged.",
-      push: "Expansion field active.",
-      spin: "Rotational influence online.",
-      storm: "Gravity wave disturbance.",
-      calm: "Stillness field stabilising."
-    };
-
-    state.ui.statusText.textContent =
-      labels[state.mode] || "The artifact responds.";
-
+    updateArtifactStatus();
     pulseAt(
       state.pointer.x || state.width / 2,
       state.pointer.y || state.height / 2,
       0.7
     );
   }
+}
+
+export function updateArtifactStatus() {
+  if (!state.ui.statusText) return;
+
+  const label = state.artifact?.stateLabel || "Dormant";
+
+  const copy = {
+    Dormant: "Dormant. Suspended in the void.",
+    Listening: "Listening. The field has noticed you.",
+    Awake: "Awake. The core is responding.",
+    Compressed: "Compressed. Matter is folding inward.",
+    Expanded: "Expanded. The halo is opening.",
+    Unstable: "Unstable. Gravity waves are moving through it."
+  };
+
+  state.ui.statusText.textContent = copy[label] || copy.Dormant;
 }
 
 export function setGesture(text) {
@@ -50,6 +57,8 @@ export function updateEnergyUI() {
   if (state.ui.energyFill) {
     state.ui.energyFill.style.width = `${rounded}%`;
   }
+
+  updateArtifactStatus();
 }
 
 export function resetField() {
@@ -57,13 +66,19 @@ export function resetField() {
 
   state.energy = CONFIG.energy.max;
 
-  pulseAt(state.width / 2, state.height / 2, 1.2);
-
-  if (state.ui.statusText) {
-    state.ui.statusText.textContent = "The field reforms.";
+  if (state.artifact) {
+    state.artifact.awakeLevel = 0;
+    state.artifact.disturbance = 0;
+    state.artifact.pressure = 0;
+    state.artifact.openness = 0;
+    state.artifact.pulse = 0;
+    state.artifact.stateLabel = "Dormant";
   }
 
-  setGesture("Reset field");
+  pulseAt(state.width / 2, state.height / 2, 1.2);
+
+  updateArtifactStatus();
+  setGesture("Reformed");
 }
 
 export function togglePause() {
@@ -75,10 +90,10 @@ export function togglePause() {
 
   if (state.ui.statusText) {
     state.ui.statusText.textContent =
-      state.paused ? "The artifact is held still." : "The artifact resumes.";
+      state.paused ? "Held outside time." : "Time resumes around it.";
   }
 
-  setGesture(state.paused ? "Paused" : "Resumed");
+  setGesture(state.paused ? "Suspended" : "Resumed");
 }
 
 export function toggleInterface() {
@@ -128,7 +143,7 @@ export function markHandLost() {
 export function initialiseUiText() {
   if (state.ui.statusText) {
     state.ui.statusText.textContent =
-      "An impossible object suspended in the void.";
+      "Dormant. Suspended in the void.";
   }
 
   if (state.ui.gestureText) {
@@ -150,14 +165,6 @@ export function initialiseUiText() {
 export function bindUiControls({ onCameraStart } = {}) {
   document.querySelectorAll("button[data-mode]").forEach((button) => {
     button.addEventListener("click", () => {
-      const modeMap = {
-        Collapse: "pull",
-        Expand: "push",
-        Rotate: "spin",
-        Disturb: "storm",
-        Stillness: "calm"
-      };
-
       setMode(button.dataset.mode);
       setGesture(`${button.textContent} influence`);
     });
