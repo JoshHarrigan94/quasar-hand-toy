@@ -6,6 +6,7 @@ import {
   resolveStructurePosition,
   STRUCTURE_TYPES
 } from "./cosmicStructures.js";
+import { CORE_LAYERS } from "./infinityCore.js";
 
 export function clearCanvas() {
   const ctx = state.ctx;
@@ -32,20 +33,24 @@ export function drawCore() {
 
   const cx = state.width / 2;
   const cy = state.height / 2;
-  const outerRadius = Math.min(state.width, state.height) * 0.22;
+  const unit = Math.min(state.width, state.height);
+
+  const outerRadius = unit * 0.28;
+  const voidRadius = unit * 0.065;
 
   const halo = ctx.createRadialGradient(
     cx,
     cy,
-    outerRadius * 0.15,
+    voidRadius,
     cx,
     cy,
     outerRadius
   );
 
-  halo.addColorStop(0, "rgba(255,255,255,0)");
-  halo.addColorStop(0.25, "rgba(125,211,252,0.08)");
-  halo.addColorStop(0.55, "rgba(168,85,247,0.14)");
+  halo.addColorStop(0, "rgba(0,0,0,0)");
+  halo.addColorStop(0.2, "rgba(125,211,252,0.035)");
+  halo.addColorStop(0.48, "rgba(168,85,247,0.09)");
+  halo.addColorStop(0.8, "rgba(255,255,255,0.018)");
   halo.addColorStop(1, "rgba(0,0,0,0)");
 
   ctx.fillStyle = halo;
@@ -54,23 +59,36 @@ export function drawCore() {
   ctx.fill();
 
   ctx.beginPath();
-  ctx.fillStyle = "rgba(0,0,0,0.98)";
-  ctx.arc(cx, cy, outerRadius * 0.36, 0, Math.PI * 2);
+  ctx.fillStyle = "rgba(0,0,0,0.99)";
+  ctx.arc(cx, cy, voidRadius, 0, Math.PI * 2);
   ctx.fill();
+
+  ctx.save();
+  ctx.translate(cx, cy);
+  ctx.rotate(state.hue * 0.002);
+  ctx.scale(1, 0.42);
+
+  ctx.beginPath();
+  ctx.strokeStyle = "rgba(255,255,255,0.035)";
+  ctx.lineWidth = 1;
+  ctx.arc(0, 0, unit * 0.18, 0, Math.PI * 2);
+  ctx.stroke();
+
+  ctx.restore();
 }
 
 function drawStarfield() {
   const ctx = state.ctx;
 
-  for (let i = 0; i < 350; i++) {
+  for (let i = 0; i < 420; i++) {
     const seed = i * 99991;
 
     const x = ((Math.sin(seed) + 1) * 0.5) * state.width;
     const y = ((Math.cos(seed) + 1) * 0.5) * state.height;
 
     const isBright = seed % 100 < 3;
-    const size = isBright ? 2 : 0.6;
-    const alpha = isBright ? 0.8 : 0.15;
+    const size = isBright ? 1.8 : 0.55;
+    const alpha = isBright ? 0.7 : 0.11;
 
     ctx.beginPath();
     ctx.fillStyle = `rgba(255,255,255,${alpha})`;
@@ -93,8 +111,8 @@ export function drawCosmicStructureGuides() {
       drawSoftOrb(
         position.x,
         position.y,
-        structure.radius * 2.2,
-        "rgba(255,255,255,0.08)"
+        structure.radius * 1.8,
+        "rgba(255,255,255,0.04)"
       );
     }
 
@@ -102,8 +120,8 @@ export function drawCosmicStructureGuides() {
       drawSoftOrb(
         position.x,
         position.y,
-        structure.radius * 1.7,
-        "rgba(125,211,252,0.045)"
+        structure.radius * 1.2,
+        "rgba(125,211,252,0.022)"
       );
     }
 
@@ -111,8 +129,8 @@ export function drawCosmicStructureGuides() {
       drawSoftOrb(
         position.x,
         position.y,
-        structure.radius * 1.5,
-        "rgba(226,232,240,0.035)"
+        structure.radius,
+        "rgba(226,232,240,0.018)"
       );
     }
 
@@ -123,14 +141,6 @@ export function drawCosmicStructureGuides() {
         structure.radius,
         structure.influenceRadius
       );
-    }
-
-    if (structure.type === STRUCTURE_TYPES.ASTEROID_BELT) {
-      // Hidden in Awe Pass. Particles reveal the belt instead.
-    }
-
-    if (structure.type === STRUCTURE_TYPES.RING_SYSTEM) {
-      // Hidden in Awe Pass. Particles reveal the ring instead.
     }
   }
 
@@ -149,7 +159,7 @@ export function drawMassAnchorFields() {
 
     const fieldRadius =
       anchor.radius *
-      (anchor.type === STRUCTURE_TYPES.STAR ? 7.5 : 4.5);
+      (anchor.type === STRUCTURE_TYPES.STAR ? 6 : 3.8);
 
     const gradient = ctx.createRadialGradient(
       anchor.x,
@@ -160,10 +170,10 @@ export function drawMassAnchorFields() {
       fieldRadius
     );
 
-    const alpha = 0.015 + anchor.glow * 0.022;
+    const alpha = 0.008 + anchor.glow * 0.014;
 
     gradient.addColorStop(0, `rgba(255,255,255,${alpha})`);
-    gradient.addColorStop(0.28, `rgba(125,211,252,${alpha * 0.5})`);
+    gradient.addColorStop(0.32, `rgba(125,211,252,${alpha * 0.45})`);
     gradient.addColorStop(1, "rgba(0,0,0,0)");
 
     ctx.fillStyle = gradient;
@@ -201,9 +211,9 @@ function drawBlackHole(x, y, radius, influenceRadius) {
   );
 
   halo.addColorStop(0, "rgba(0,0,0,0.98)");
-  halo.addColorStop(0.14, "rgba(15,23,42,0.75)");
-  halo.addColorStop(0.25, "rgba(168,85,247,0.08)");
-  halo.addColorStop(0.5, "rgba(125,211,252,0.025)");
+  halo.addColorStop(0.14, "rgba(15,23,42,0.7)");
+  halo.addColorStop(0.28, "rgba(168,85,247,0.055)");
+  halo.addColorStop(0.52, "rgba(125,211,252,0.018)");
   halo.addColorStop(1, "rgba(0,0,0,0)");
 
   ctx.fillStyle = halo;
@@ -222,16 +232,73 @@ function drawBlackHole(x, y, radius, influenceRadius) {
   ctx.scale(1, 0.24);
 
   ctx.beginPath();
-  ctx.strokeStyle = "rgba(255,255,255,0.045)";
-  ctx.lineWidth = Math.max(1, radius * 0.35);
+  ctx.strokeStyle = "rgba(255,255,255,0.035)";
+  ctx.lineWidth = Math.max(1, radius * 0.3);
   ctx.arc(0, 0, radius * 3.8, 0, Math.PI * 2);
   ctx.stroke();
 
   ctx.restore();
 }
 
+function getLayerVisuals(particle) {
+  if (particle.layer === CORE_LAYERS.CORE) {
+    return {
+      hueShift: 52,
+      saturation: 26,
+      lightness: 76,
+      alphaBase: 0.06,
+      alphaDepth: 0.24,
+      alphaGlow: 0.2,
+      alphaSpeed: 0.09,
+      size: 0.72,
+      trail: 0.24
+    };
+  }
+
+  if (particle.layer === CORE_LAYERS.INNER) {
+    return {
+      hueShift: 24,
+      saturation: 32,
+      lightness: 72,
+      alphaBase: 0.045,
+      alphaDepth: 0.19,
+      alphaGlow: 0.16,
+      alphaSpeed: 0.08,
+      size: 0.58,
+      trail: 0.2
+    };
+  }
+
+  if (particle.layer === CORE_LAYERS.OUTER) {
+    return {
+      hueShift: -4,
+      saturation: 24,
+      lightness: 66,
+      alphaBase: 0.028,
+      alphaDepth: 0.14,
+      alphaGlow: 0.1,
+      alphaSpeed: 0.055,
+      size: 0.46,
+      trail: 0.14
+    };
+  }
+
+  return {
+    hueShift: -18,
+    saturation: 18,
+    lightness: 58,
+    alphaBase: 0.012,
+    alphaDepth: 0.08,
+    alphaGlow: 0.055,
+    alphaSpeed: 0.035,
+    size: 0.34,
+    trail: 0.08
+  };
+}
+
 export function drawParticle(particle) {
   const ctx = state.ctx;
+  const visuals = getLayerVisuals(particle);
 
   const dx = particle.x - state.width / 2;
   const dy = particle.y - state.height / 2;
@@ -248,51 +315,47 @@ export function drawParticle(particle) {
   let structureBoost = 0;
   let sizeBoost = 1;
 
-  if (particle.structureId) {
-    structureBoost = 8;
-    sizeBoost = 0.9;
-  }
-
   if (particle.structureId === "central-star") {
-    structureBoost = 18;
-    sizeBoost = 1.15;
+    structureBoost = 10;
+    sizeBoost = 1.08;
   }
 
   if (particle.structureId === "ring-system") {
     structureBoost = 4;
-    sizeBoost = 0.62;
+    sizeBoost = 0.72;
   }
 
   if (particle.structureId === "asteroid-belt") {
-    structureBoost = -10;
-    sizeBoost = 0.55;
+    structureBoost = -8;
+    sizeBoost = 0.68;
   }
 
   if (particle.structureId === "hidden-black-hole") {
-    structureBoost = 24;
-    sizeBoost = 0.58;
+    structureBoost = 18;
+    sizeBoost = 0.65;
   }
 
   const particleHue =
     state.hue +
-    particle.depth * 24 +
-    glow * 26 +
-    speed * 18 +
+    visuals.hueShift +
+    particle.depth * 14 +
+    glow * 18 +
+    speed * 12 +
     structureBoost;
 
   const alpha =
     (
-      0.04 +
-      particle.depth * 0.18 +
-      glow * 0.15 +
-      speed * 0.08
+      visuals.alphaBase +
+      particle.depth * visuals.alphaDepth +
+      glow * visuals.alphaGlow +
+      speed * visuals.alphaSpeed
     ) *
     twinkle;
 
   ctx.beginPath();
 
-  ctx.fillStyle = `hsla(${particleHue}, 35%, ${
-    68 + glow * 18 + speed * 8
+  ctx.fillStyle = `hsla(${particleHue}, ${visuals.saturation}%, ${
+    visuals.lightness + glow * 12 + speed * 8
   }%, ${alpha})`;
 
   ctx.arc(
@@ -300,7 +363,7 @@ export function drawParticle(particle) {
     particle.y,
     particle.size *
       particle.depth *
-      0.55 *
+      visuals.size *
       sizeBoost *
       (particle.spark ? 1.8 : 1),
     0,
@@ -309,16 +372,19 @@ export function drawParticle(particle) {
 
   ctx.fill();
 
-  if (speed > 0.62 || particle.spark) {
+  if (speed > 0.58 || particle.spark) {
     ctx.beginPath();
 
-    ctx.strokeStyle = `hsla(${particleHue}, 40%, 78%, ${alpha * 0.22})`;
-    ctx.lineWidth = particle.size * 0.32;
+    ctx.strokeStyle = `hsla(${particleHue}, ${visuals.saturation + 8}%, ${
+      visuals.lightness + 8
+    }%, ${alpha * visuals.trail})`;
+
+    ctx.lineWidth = particle.size * visuals.size * 0.55;
 
     ctx.moveTo(particle.x, particle.y);
     ctx.lineTo(
-      particle.x - particle.vx * 1.9,
-      particle.y - particle.vy * 1.9
+      particle.x - particle.vx * 2.1,
+      particle.y - particle.vy * 2.1
     );
 
     ctx.stroke();
@@ -347,8 +413,8 @@ export function drawPointerGlow() {
     radius
   );
 
-  gradient.addColorStop(0, "rgba(255,255,255,0.12)");
-  gradient.addColorStop(0.22, "rgba(125,211,252,0.08)");
+  gradient.addColorStop(0, "rgba(255,255,255,0.1)");
+  gradient.addColorStop(0.22, "rgba(125,211,252,0.065)");
   gradient.addColorStop(1, "rgba(0,0,0,0)");
 
   ctx.fillStyle = gradient;
@@ -360,8 +426,8 @@ export function drawPointerGlow() {
     ctx.beginPath();
 
     ctx.strokeStyle = pointer.down
-      ? "rgba(255,255,255,0.55)"
-      : "rgba(255,255,255,0.26)";
+      ? "rgba(255,255,255,0.5)"
+      : "rgba(255,255,255,0.22)";
 
     ctx.lineWidth = pointer.down ? 2 : 1.2;
     ctx.arc(pointer.x, pointer.y, pointer.down ? 18 : 12, 0, Math.PI * 2);
@@ -376,8 +442,8 @@ export function drawShockwaves() {
     const wave = state.shockwaves[i];
 
     ctx.beginPath();
-    ctx.strokeStyle = `rgba(255,255,255,${wave.alpha * 0.45})`;
-    ctx.lineWidth = 1.4;
+    ctx.strokeStyle = `rgba(255,255,255,${wave.alpha * 0.38})`;
+    ctx.lineWidth = 1.25;
     ctx.arc(wave.x, wave.y, wave.radius, 0, Math.PI * 2);
     ctx.stroke();
 
@@ -402,11 +468,11 @@ export function drawComets() {
 
     ctx.beginPath();
 
-    ctx.strokeStyle = `hsla(${state.hue + comet.hueOffset}, 35%, 75%, ${
-      comet.life * 0.16
+    ctx.strokeStyle = `hsla(${state.hue + comet.hueOffset}, 28%, 72%, ${
+      comet.life * 0.13
     })`;
 
-    ctx.lineWidth = 1.2;
+    ctx.lineWidth = 1;
     ctx.moveTo(comet.x, comet.y);
     ctx.lineTo(comet.x - comet.vx * 8, comet.y - comet.vy * 8);
     ctx.stroke();
@@ -447,6 +513,6 @@ export function renderFrame() {
 export function advanceHue() {
   state.hue +=
     state.mode === "storm"
-      ? CONFIG.visuals.stormHueSpeed * 0.55
-      : CONFIG.visuals.normalHueSpeed * 0.45;
+      ? CONFIG.visuals.stormHueSpeed * 0.45
+      : CONFIG.visuals.normalHueSpeed * 0.32;
 }
