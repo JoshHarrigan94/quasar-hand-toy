@@ -1,43 +1,43 @@
 export const CONFIG = {
   particles: {
-    mobileCount: 2600,
+    mobileCount: 3200,
     desktopCount: 5600,
     maxDevicePixelRatio: 2,
-    respawnPadding: 180,
-    galaxyRadiusFactor: 0.62,
-    verticalCompression: 0.58
+    respawnPadding: 220,
+    galaxyRadiusFactor: 0.72,
+    verticalCompression: 0.56
   },
 
   physics: {
-    coreGravity: 0.00092,
-    orbitStrength: 0.012,
-    drag: 0.991,
-    pointerRadius: 260,
-    flingRadius: 340
+    coreGravity: 0.00062,
+    orbitStrength: 0.0075,
+    drag: 0.994,
+    pointerRadius: 250,
+    flingRadius: 320
   },
 
   artifact: {
-    awakeDecay: 0.996,
-    pulseDecay: 0.94,
-    disturbanceDecay: 0.985,
-    pressureDecay: 0.982,
-    opennessDecay: 0.985,
-    calmDecayMultiplier: 0.97,
-    sleepDelayMs: 1800
+    awakeDecay: 0.997,
+    pulseDecay: 0.945,
+    disturbanceDecay: 0.988,
+    pressureDecay: 0.986,
+    opennessDecay: 0.988,
+    calmDecayMultiplier: 0.965,
+    sleepDelayMs: 2400
   },
 
   structures: {
     enabled: true,
-    structurePullMultiplier: 0.72,
-    orbitRevealStrength: 0.26,
-    guideOpacity: 0.35
+    structurePullMultiplier: 0.55,
+    orbitRevealStrength: 0.2,
+    guideOpacity: 0.2
   },
 
   energy: {
     max: 100,
-    calmRecoveryRate: 0.14,
-    normalRecoveryRate: 0.055,
-    touchDrainRate: 0.035,
+    calmRecoveryRate: 0.12,
+    normalRecoveryRate: 0.045,
+    touchDrainRate: 0.03,
     explodeCost: 12,
     implodeCost: 10,
     flingCost: 5
@@ -55,19 +55,19 @@ export const CONFIG = {
 
   gestures: {
     pinchDistance: 0.055,
-    swipeSpeed: 42,
-    swipeCooldownMs: 500,
-    smashCooldownMs: 900,
-    stillSpeed: 3,
-    stillFrames: 32,
+    swipeSpeed: 48,
+    swipeCooldownMs: 650,
+    smashCooldownMs: 1100,
+    stillSpeed: 2.4,
+    stillFrames: 42,
     fistWristToIndex: 0.28
   },
 
   visuals: {
     baseHue: 190,
-    cometSpawnChance: 0.006,
-    trailFade: 0.1,
-    stormHueSpeed: 0.38,
-    normalHueSpeed: 0.07
+    cometSpawnChance: 0.003,
+    trailFade: 0.08,
+    stormHueSpeed: 0.18,
+    normalHueSpeed: 0.035
   }
 };
