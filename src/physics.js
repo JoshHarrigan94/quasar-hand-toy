@@ -825,9 +825,13 @@ export function updatePhysics() {
   recoverEnergy();
   updatePresenceState();
   updateArtifactState();
+  maybeAutonomousPulse();
+  if (state.memory) {
+  state.memory.totalInteractionTime += 1 / 60;
+}
   spawnComet();
   updateArtifactMind();
-  maybeAutonomousPulse();
+  
 
   state.particles.forEach((particle, index) => {
     updateParticlePhysics(particle, index);
