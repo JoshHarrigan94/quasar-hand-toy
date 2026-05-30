@@ -180,6 +180,7 @@ function clamp01(value) {
 }
 
 export function saveArtifactMemory() {
+  updateDerivedMemory();
   try {
     localStorage.setItem(
       "artifact-memory",
@@ -201,6 +202,7 @@ export function loadArtifactMemory() {
       state.memory,
       JSON.parse(saved)
     );
+    updateDerivedMemory();
   } catch (err) {
     console.warn(err);
   }
