@@ -20,8 +20,8 @@ export function updatePresenceState() {
   state.presence.breathPhase += 0.0022;
   state.presence.breath = (Math.sin(state.presence.breathPhase) + 1) / 2;
 
-  if (timeSinceInteraction > 2200 && !state.pointer.down) {
-    state.presence.stillness = Math.min(1, state.presence.stillness + 0.0028);
+  if (timeSinceInteraction > 1600 && !state.pointer.down) {
+  state.presence.stillness = Math.min(1, state.presence.stillness + 0.0042);
   } else {
     state.presence.stillness *= 0.985;
   }
@@ -147,11 +147,11 @@ export function gravityWaveAt(x, y, strength = 1) {
     const tx = -ny;
     const ty = nx;
 
-    particle.vx += nx * influence * strength * 1.25 * particle.depth;
-    particle.vy += ny * influence * strength * 1.25 * particle.depth;
+    particle.vx += nx * influence * strength * 0.95 * particle.depth;
+particle.vy += ny * influence * strength * 0.95 * particle.depth;
 
-    particle.vx += tx * influence * strength * 0.62;
-    particle.vy += ty * influence * strength * 0.62;
+particle.vx += tx * influence * strength * 0.5;
+particle.vy += ty * influence * strength * 0.5;
   }
 }
 
@@ -476,9 +476,9 @@ function applyPointerPhysics(particle) {
     });
 
     const rotateForce =
-      force *
-      0.72 *
-      (0.55 + influence * 0.45);
+  force *
+  0.92 *
+  (0.5 + influence * 0.5);
 
     particle.vx += -py * rotateForce;
     particle.vy += px * rotateForce;
