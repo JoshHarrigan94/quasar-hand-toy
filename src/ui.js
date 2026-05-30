@@ -1,4 +1,4 @@
-import { state } from "./state.js";
+import { state, setScene } from "./state.js";
 import { CONFIG } from "./config.js";
 import { createParticles } from "./particles.js";
 import { pulseAt } from "./physics.js";
@@ -26,7 +26,13 @@ export function setMode(nextMode, silent = false) {
 
 export function updateArtifactStatus() {
   const label = state.artifact?.stateLabel || "Dormant";
+  const sceneCopy = {
+  dormant: "Dormant Core",
+  reveal: "Revealing Geometry",
+  disturbed: "Disturbed Field"
+};
 
+const sceneLabel = sceneCopy[state.scene?.current] || "Dormant Core";
   const copy = {
   Dormant: "Dormant. Suspended beyond scale.",
   Listening: "Listening. The field has detected presence.",
@@ -46,8 +52,8 @@ export function updateArtifactStatus() {
   const artifactStateText = document.getElementById("artifactStateText");
 
   if (artifactStateText) {
-    artifactStateText.textContent = label;
-  }
+  artifactStateText.textContent = `${sceneLabel} · ${label}`;
+}
 }
 
 export function setGesture(text) {
@@ -227,6 +233,23 @@ export function initialiseUiText() {
   }
 
   scheduleAutoCollapse();
+}
+
+export function cycleScene() {
+  const order = ["dormant", "reveal", "disturbed"];
+  const currentIndex = order.indexOf(state.scene.current);
+  const nextScene = order[(currentIndex + 1) % order.length];
+
+  setScene(nextScene);
+
+  const labels = {
+    dormant: "Dormant Core",
+    reveal: "Revealing Geometry",
+    disturbed: "Disturbed Field"
+  };
+
+  setGesture(labels[nextScene] || "Scene shifted");
+  updateArtifactStatus();
 }
 
 export function bindUiControls({ onCameraStart } = {}) {
