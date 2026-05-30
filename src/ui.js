@@ -331,11 +331,13 @@ if (state.ui.gravityBtn) {
 
   if (state.ui.cameraBtn && onCameraStart) {
   state.ui.cameraBtn.addEventListener("click", async () => {
-    if (state.cameraActive && window.stopInfinityCamera) {
-      await window.stopInfinityCamera();
-    } else {
-      await onCameraStart();
-    }
+    if (state.cameraActive) {
+  if (window.stopInfinityCamera) {
+    await window.stopInfinityCamera();
+  }
+} else {
+  await onCameraStart();
+}
 
     updateCameraButton();
     noteUiInteraction();
