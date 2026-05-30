@@ -68,6 +68,10 @@ function loop() {
   requestAnimationFrame(loop);
 }
 
+setInterval(() => {
+  saveArtifactMemory();
+}, 15000);
+
 function startApplication() {
   loadArtifactMemory();
 
