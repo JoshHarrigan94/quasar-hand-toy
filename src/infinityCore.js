@@ -153,18 +153,18 @@ function getCoreWell(particle, index) {
     getBaseValues(particle, index);
 
   const radius =
-    unit *
-    scale *
-    (lane === "core" ? 0.025 + band * 0.055 : 0.045 + band * 0.08);
+  unit *
+  scale *
+  (lane === "core" ? 0.012 + band * 0.026 : 0.035 + band * 0.05);
 
   return targetResponse({
     x: cx + Math.cos(phase * 0.45) * radius,
     y: cy + Math.sin(phase * 0.36) * radius * 0.55,
-    pull: lane === "core" ? 0.04 : 0.018,
+    pull: lane === "core" ? 0.026 : 0.014,
     orbit: 0.004,
     drag: 0.9982,
     path: "well",
-    lock: lane === "core" ? 1.5 : 0.9
+    lock: lane === "core" ? 0.9 : 0.6
   });
 }
 
