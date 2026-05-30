@@ -401,26 +401,21 @@ button.active {
 /* -------------------------------- */
 
 @media (max-width: 820px) {
-
   .hud {
-    opacity: .78;
+    opacity: .92;
   }
 
-  #interfaceShell {
-    transform: translateY(0);
-  }
-
-  #interfaceShell:not(.manual-open) {
+  .hud.collapsed {
     opacity: 0;
     transform: translateY(20px);
     pointer-events: none;
   }
 
   .ui-toggle {
-    opacity: .55;
+    opacity: .72;
   }
 
   .hint {
-    opacity: .22;
+    opacity: .28;
   }
 }
