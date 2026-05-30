@@ -11,7 +11,7 @@ export const state = {
   hue: 190,
   mode: "pull",
   energy: 100,
-
+  gravityMode: "calm",
   particles: [],
   shockwaves: [],
   comets: [],
