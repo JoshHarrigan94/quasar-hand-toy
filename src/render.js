@@ -9,7 +9,7 @@ function isSmallScreen() {
 export function clearCanvas() {
   const ctx = state.ctx;
   const awake = state.artifact.awakeLevel;
-  const phoneBoost = isSmallScreen() ? 1.8 : 1;
+  const phone = isSmallScreen();
 
   const gradient = ctx.createRadialGradient(
     state.width / 2,
@@ -22,9 +22,12 @@ export function clearCanvas() {
 
   gradient.addColorStop(
     0,
-    `rgb(${2 + awake * 3 * phoneBoost}, ${2 + awake * 3 * phoneBoost}, ${4 + awake * 4 * phoneBoost})`
+    phone
+      ? `rgb(${5 + awake * 4}, ${5 + awake * 4}, ${7 + awake * 5})`
+      : `rgb(${2 + awake * 2}, ${2 + awake * 2}, ${3 + awake * 3})`
   );
-  gradient.addColorStop(0.4, "#000000");
+
+  gradient.addColorStop(0.48, "#000000");
   gradient.addColorStop(1, "#000000");
 
   ctx.fillStyle = gradient;
@@ -38,63 +41,31 @@ export function drawCore() {
   const cy = state.height / 2;
   const unit = Math.min(state.width, state.height);
 
-  const awake = state.artifact.awakeLevel;
   const pressure = state.artifact.pressure;
   const openness = state.artifact.openness;
   const pulse = state.artifact.pulse;
-  const breath = state.presence.breath;
-  const stillness = state.presence.stillness;
   const presencePulse = state.presence.presencePulse;
-
-  const outerRadius =
-    unit *
-    (
-      0.19 +
-      awake * 0.018 +
-      Math.max(0, openness) * 0.02 +
-      breath * 0.006 +
-      presencePulse * 0.02
-    );
 
   const voidRadius =
     unit *
     (
-      0.075 +
-      Math.max(0, pressure) * 0.02 -
-      Math.max(0, openness) * 0.01 +
-      stillness * 0.004
+      0.072 +
+      Math.max(0, pressure) * 0.018 -
+      Math.max(0, openness) * 0.01
     );
 
-  const verySoftMass = ctx.createRadialGradient(
-    cx,
-    cy,
-    voidRadius,
-    cx,
-    cy,
-    outerRadius
-  );
-
-  verySoftMass.addColorStop(0, "rgba(0,0,0,0)");
-  verySoftMass.addColorStop(0.48, `rgba(180,190,200,${0.01 + awake * 0.012})`);
-  verySoftMass.addColorStop(1, "rgba(0,0,0,0)");
-
-  ctx.fillStyle = verySoftMass;
-  ctx.beginPath();
-  ctx.arc(cx, cy, outerRadius, 0, Math.PI * 2);
-  ctx.fill();
-
-  if (pulse > 0.08 || presencePulse > 0.08) {
+  if (pulse > 0.1 || presencePulse > 0.1) {
     const wave = Math.max(pulse, presencePulse);
 
     ctx.beginPath();
-    ctx.strokeStyle = `rgba(220,225,230,${wave * 0.035})`;
-    ctx.lineWidth = 0.8 + wave;
-    ctx.arc(cx, cy, outerRadius * (0.7 + wave * 0.18), 0, Math.PI * 2);
+    ctx.strokeStyle = `rgba(230,235,240,${wave * 0.028})`;
+    ctx.lineWidth = 0.8 + wave * 0.8;
+    ctx.arc(cx, cy, voidRadius * (2.2 + wave * 2), 0, Math.PI * 2);
     ctx.stroke();
   }
 
   ctx.beginPath();
-  ctx.fillStyle = "rgba(0,0,0,0.998)";
+  ctx.fillStyle = "rgba(0,0,0,0.999)";
   ctx.arc(cx, cy, Math.max(unit * 0.045, voidRadius), 0, Math.PI * 2);
   ctx.fill();
 }
@@ -103,22 +74,22 @@ function drawStarfield() {
   const ctx = state.ctx;
   const awake = state.artifact.awakeLevel;
   const stillness = state.presence.stillness;
-  const phoneBoost = isSmallScreen() ? 1.6 : 1;
+  const phoneBoost = isSmallScreen() ? 1.8 : 1;
 
-  for (let i = 0; i < 420; i++) {
+  for (let i = 0; i < 460; i++) {
     const seed = i * 99991;
 
     const x = ((Math.sin(seed) + 1) * 0.5) * state.width;
     const y = ((Math.cos(seed) + 1) * 0.5) * state.height;
 
-    const isBright = seed % 220 < 2;
-    const size = isBright ? 1.18 * phoneBoost : 0.32 * phoneBoost;
+    const isBright = seed % 180 < 2;
+    const size = isBright ? 1.25 * phoneBoost : 0.38 * phoneBoost;
     const alpha = isBright
-      ? 0.38 + awake * 0.07 + stillness * 0.05
-      : 0.055 + awake * 0.014 + stillness * 0.012;
+      ? 0.48 + awake * 0.08 + stillness * 0.06
+      : 0.07 + awake * 0.018 + stillness * 0.014;
 
     ctx.beginPath();
-    ctx.fillStyle = `rgba(225,230,235,${alpha})`;
+    ctx.fillStyle = `rgba(230,235,240,${alpha})`;
     ctx.arc(x, y, size, 0, Math.PI * 2);
     ctx.fill();
   }
@@ -130,54 +101,54 @@ function getPathVisuals(particle) {
 
   if (particle.gravityPath === GRAVITY_PATHS.TORUS) {
     return {
-      alpha: revealing ? 1.35 : 1.18,
-      size: phone ? 1.18 : 1.02,
-      trail: revealing ? 1.15 : 1,
-      lightness: revealing ? 6 : 4
+      alpha: revealing ? 1.5 : 1.35,
+      size: phone ? 1.36 : 1.14,
+      trail: revealing ? 1.16 : 1.02,
+      lightness: revealing ? 9 : 6
     };
   }
 
   if (particle.gravityPath === GRAVITY_PATHS.INFINITY) {
     return {
-      alpha: revealing ? 1.48 : 1.28,
-      size: phone ? 1.24 : 1.08,
-      trail: revealing ? 1.28 : 1.08,
-      lightness: revealing ? 9 : 6
+      alpha: revealing ? 1.65 : 1.46,
+      size: phone ? 1.46 : 1.22,
+      trail: revealing ? 1.32 : 1.14,
+      lightness: revealing ? 12 : 9
     };
   }
 
   if (particle.gravityPath === GRAVITY_PATHS.SINE) {
     return {
-      alpha: revealing ? 1.05 : 0.92,
-      size: phone ? 1.05 : 0.9,
-      trail: revealing ? 0.95 : 0.82,
-      lightness: revealing ? 4 : 1
+      alpha: revealing ? 1.2 : 1.05,
+      size: phone ? 1.24 : 1.02,
+      trail: revealing ? 1.02 : 0.88,
+      lightness: revealing ? 7 : 4
     };
   }
 
   if (particle.gravityPath === GRAVITY_PATHS.PARABOLA) {
     return {
-      alpha: revealing ? 0.98 : 0.86,
-      size: phone ? 1 : 0.86,
-      trail: revealing ? 0.9 : 0.78,
-      lightness: revealing ? 2 : -1
+      alpha: revealing ? 1.08 : 0.96,
+      size: phone ? 1.18 : 0.96,
+      trail: revealing ? 0.94 : 0.82,
+      lightness: revealing ? 5 : 2
     };
   }
 
   if (particle.gravityPath === GRAVITY_PATHS.DEEP_FIELD) {
     return {
-      alpha: revealing ? 0.68 : 0.56,
-      size: phone ? 0.82 : 0.68,
-      trail: revealing ? 0.58 : 0.48,
-      lightness: revealing ? -3 : -6
+      alpha: revealing ? 0.8 : 0.68,
+      size: phone ? 0.92 : 0.72,
+      trail: revealing ? 0.62 : 0.52,
+      lightness: revealing ? -1 : -4
     };
   }
 
   return {
-    alpha: revealing ? 1.26 : 1.12,
-    size: phone ? 1.22 : 1.06,
+    alpha: revealing ? 1.4 : 1.25,
+    size: phone ? 1.42 : 1.18,
     trail: revealing ? 1.08 : 0.95,
-    lightness: revealing ? 5 : 3
+    lightness: revealing ? 8 : 5
   };
 }
 
@@ -189,19 +160,19 @@ function getLayerVisuals(particle) {
   const presencePulse = state.presence.presencePulse;
   const phone = isSmallScreen();
 
-  const phoneAlpha = phone ? 1.55 : 1;
-  const phoneSize = phone ? 1.28 : 1;
+  const phoneAlpha = phone ? 1.95 : 1.18;
+  const phoneSize = phone ? 1.42 : 1.12;
 
   if (particle.layer === CORE_LAYERS.CORE) {
     return {
       hueShift: 0,
       saturation: 5 + awake * 3,
-      lightness: 82 + awake * 4 + stillness * 3,
-      alphaBase: (0.055 + awake * 0.018 + presencePulse * 0.02) * phoneAlpha,
-      alphaDepth: (0.22 + awake * 0.04 + stillness * 0.04) * phoneAlpha,
-      alphaGlow: (0.15 + disturbance * 0.03 + breath * 0.014) * phoneAlpha,
-      alphaSpeed: (0.05 + disturbance * 0.02) * phoneAlpha,
-      size: (0.62 + awake * 0.05 + breath * 0.018) * phoneSize,
+      lightness: 86 + awake * 4 + stillness * 3,
+      alphaBase: (0.07 + awake * 0.02 + presencePulse * 0.02) * phoneAlpha,
+      alphaDepth: (0.26 + awake * 0.045 + stillness * 0.04) * phoneAlpha,
+      alphaGlow: (0.18 + disturbance * 0.035 + breath * 0.014) * phoneAlpha,
+      alphaSpeed: (0.06 + disturbance * 0.02) * phoneAlpha,
+      size: (0.76 + awake * 0.055 + breath * 0.018) * phoneSize,
       trail: 0.1 + disturbance * 0.035 + stillness * 0.025
     };
   }
@@ -210,12 +181,12 @@ function getLayerVisuals(particle) {
     return {
       hueShift: -4,
       saturation: 5 + awake * 2,
-      lightness: 74 + awake * 3 + stillness * 3,
-      alphaBase: (0.04 + awake * 0.014 + presencePulse * 0.015) * phoneAlpha,
-      alphaDepth: (0.17 + awake * 0.03 + stillness * 0.03) * phoneAlpha,
-      alphaGlow: (0.11 + disturbance * 0.025 + breath * 0.01) * phoneAlpha,
-      alphaSpeed: (0.036 + disturbance * 0.014) * phoneAlpha,
-      size: (0.5 + awake * 0.035 + breath * 0.012) * phoneSize,
+      lightness: 80 + awake * 3 + stillness * 3,
+      alphaBase: (0.052 + awake * 0.016 + presencePulse * 0.015) * phoneAlpha,
+      alphaDepth: (0.21 + awake * 0.034 + stillness * 0.03) * phoneAlpha,
+      alphaGlow: (0.14 + disturbance * 0.028 + breath * 0.01) * phoneAlpha,
+      alphaSpeed: (0.046 + disturbance * 0.014) * phoneAlpha,
+      size: (0.64 + awake * 0.04 + breath * 0.012) * phoneSize,
       trail: 0.085 + disturbance * 0.028 + stillness * 0.02
     };
   }
@@ -224,12 +195,12 @@ function getLayerVisuals(particle) {
     return {
       hueShift: -10,
       saturation: 4 + awake * 1.5,
-      lightness: 64 + awake * 2 + stillness * 2,
-      alphaBase: (0.024 + awake * 0.008 + presencePulse * 0.01) * phoneAlpha,
-      alphaDepth: (0.1 + awake * 0.018 + stillness * 0.018) * phoneAlpha,
-      alphaGlow: (0.065 + disturbance * 0.018 + breath * 0.006) * phoneAlpha,
-      alphaSpeed: (0.026 + disturbance * 0.01) * phoneAlpha,
-      size: (0.4 + awake * 0.02 + breath * 0.006) * phoneSize,
+      lightness: 70 + awake * 2 + stillness * 2,
+      alphaBase: (0.034 + awake * 0.01 + presencePulse * 0.01) * phoneAlpha,
+      alphaDepth: (0.14 + awake * 0.02 + stillness * 0.018) * phoneAlpha,
+      alphaGlow: (0.085 + disturbance * 0.02 + breath * 0.006) * phoneAlpha,
+      alphaSpeed: (0.032 + disturbance * 0.01) * phoneAlpha,
+      size: (0.52 + awake * 0.024 + breath * 0.006) * phoneSize,
       trail: 0.055 + disturbance * 0.018 + stillness * 0.014
     };
   }
@@ -237,12 +208,12 @@ function getLayerVisuals(particle) {
   return {
     hueShift: -18,
     saturation: 3,
-    lightness: 54 + awake * 2 + stillness * 2,
-    alphaBase: (0.009 + awake * 0.003 + presencePulse * 0.004) * phoneAlpha,
-    alphaDepth: (0.05 + awake * 0.01 + stillness * 0.012) * phoneAlpha,
-    alphaGlow: (0.025 + disturbance * 0.01) * phoneAlpha,
-    alphaSpeed: (0.012 + disturbance * 0.006) * phoneAlpha,
-    size: (0.26 + awake * 0.01) * phoneSize,
+    lightness: 60 + awake * 2 + stillness * 2,
+    alphaBase: (0.014 + awake * 0.004 + presencePulse * 0.004) * phoneAlpha,
+    alphaDepth: (0.07 + awake * 0.012 + stillness * 0.012) * phoneAlpha,
+    alphaGlow: (0.035 + disturbance * 0.012) * phoneAlpha,
+    alphaSpeed: (0.016 + disturbance * 0.006) * phoneAlpha,
+    size: (0.34 + awake * 0.012) * phoneSize,
     trail: 0.026 + disturbance * 0.01 + stillness * 0.008
   };
 }
@@ -256,16 +227,16 @@ export function drawParticle(particle) {
   const dy = particle.y - state.height / 2;
   const dist = Math.hypot(dx, dy);
 
-  const glow = Math.max(0, 1 - dist / (Math.min(state.width, state.height) * 0.72));
+  const glow = Math.max(0, 1 - dist / (Math.min(state.width, state.height) * 0.78));
   const speed = Math.min(1, Math.hypot(particle.vx, particle.vy) / 10);
-  const twinkle = 0.84 + Math.sin(particle.pulse) * 0.16;
+  const twinkle = 0.86 + Math.sin(particle.pulse) * 0.14;
 
   let sizeBoost = 1;
 
-  if (particle.structureId === "central-mass") sizeBoost = 1.04;
-  if (particle.structureId === "inner-artifact-ring") sizeBoost = 0.86;
-  if (particle.structureId === "outer-artifact-ring") sizeBoost = 0.76;
-  if (particle.structureId === "deep-field") sizeBoost = 0.62;
+  if (particle.structureId === "central-mass") sizeBoost = 1.08;
+  if (particle.structureId === "inner-artifact-ring") sizeBoost = 0.94;
+  if (particle.structureId === "outer-artifact-ring") sizeBoost = 0.86;
+  if (particle.structureId === "deep-field") sizeBoost = 0.72;
 
   const particleHue =
     state.hue +
@@ -288,7 +259,7 @@ export function drawParticle(particle) {
 
   ctx.fillStyle = `hsla(${particleHue}, ${visuals.saturation}%, ${
     visuals.lightness + pathVisuals.lightness + glow * 7 + speed * 4
-  }%, ${Math.min(0.92, alpha)})`;
+  }%, ${Math.min(0.96, alpha)})`;
 
   ctx.arc(
     particle.x,
