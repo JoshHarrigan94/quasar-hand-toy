@@ -238,21 +238,34 @@ export function initialiseUiText() {
   scheduleAutoCollapse();
 }
 
+function clearPointerInfluence() {
+  state.pointer.active = false;
+  state.pointer.down = false;
+  state.pointer.vx = 0;
+  state.pointer.vy = 0;
+}
+
 export function cycleScene() {
   const order = ["dormant", "saturn", "cube", "wave", "reveal", "disturbed"];
   const currentIndex = order.indexOf(state.scene.current);
   const nextScene = order[(currentIndex + 1) % order.length];
 
   setScene(nextScene);
+  clearPointerInfluence();
+
+  state.artifact.pulse = 0;
+  state.artifact.disturbance *= 0.35;
+  state.presence.stillness = 1;
+  state.presence.revealing = true;
 
   const labels = {
-  dormant: "Dormant Core",
-  saturn: "Saturn Ring",
-  cube: "Cube Well",
-  wave: "Wave Complex",
-  reveal: "Revealing Geometry",
-  disturbed: "Disturbed Field"
-};
+    dormant: "Dormant Core",
+    saturn: "Saturn Ring",
+    cube: "Cube Well",
+    wave: "Wave Complex",
+    reveal: "Revealing Geometry",
+    disturbed: "Disturbed Field"
+  };
 
   setGesture(labels[nextScene] || "Scene shifted");
   updateArtifactStatus();
