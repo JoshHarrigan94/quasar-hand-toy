@@ -17,10 +17,13 @@
   comets: [],
 
   scene: {
-    current: "dormant",
-    transition: 0,
-    lastChangeAt: Date.now()
-  },
+  current: "dormant",
+  previous: "dormant",
+  transition: 1,
+  transitionStartedAt: Date.now(),
+  transitionDuration: 2600,
+  lastChangeAt: Date.now()
+},
 
   artifact: {
     awakeLevel: 0,
@@ -127,8 +130,12 @@ mind: {
 };
 
 export function setScene(sceneName) {
+  if (state.scene.current === sceneName) return;
+
+  state.scene.previous = state.scene.current;
   state.scene.current = sceneName;
-  state.scene.transition = 1;
+  state.scene.transition = 0;
+  state.scene.transitionStartedAt = Date.now();
   state.scene.lastChangeAt = Date.now();
 }
 
