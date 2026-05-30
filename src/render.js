@@ -148,7 +148,9 @@ export function drawCore() {
   const pulse = state.artifact.pulse;
   const presencePulse = state.presence.presencePulse;
   const sceneVisuals = getSceneVisuals();
-
+  const transition = state.scene?.transition ?? 1;
+const transitionGlow =
+  1 - Math.abs(transition - 0.5) * 2;
   const voidRadius =
     unit *
     (0.055 + Math.max(0, pressure) * 0.012 - Math.max(0, openness) * 0.006);
@@ -355,9 +357,10 @@ export function drawParticle(particle) {
     ) *
     twinkle *
     pathVisuals.alpha *
-    sceneVisuals.pathAlpha *
-    laneVisuals.alpha *
-    geometryVisuals.alpha;
+sceneVisuals.pathAlpha *
+laneVisuals.alpha *
+geometryVisuals.alpha *
+(1 + transitionGlow * 0.35);
 
   const lightness =
     (
@@ -375,21 +378,20 @@ export function drawParticle(particle) {
   ctx.fillStyle = `hsla(${particleHue}, ${visuals.saturation}%, ${lightness}%, ${Math.min(0.96, alpha)})`;
 
   ctx.arc(
-    particle.x,
-    particle.y,
-    particle.size *
-      particle.depth *
-      visuals.size *
-      pathVisuals.size *
-      laneVisuals.size *
-      geometryVisuals.size *
-      sizeBoost *
-      0.84 *
-      sceneVisuals.size *
-      (particle.spark ? 1.1 : 1),
-    0,
-    Math.PI * 2
-  );
+  particle.x,
+  particle.y,
+  particle.size *
+    particle.depth *
+    visuals.size *
+    pathVisuals.size *
+    sizeBoost *
+    0.88 *
+    sceneVisuals.size *
+    (1 + transitionGlow * 0.08) *
+    (particle.spark ? 1.15 : 1),
+  0,
+  Math.PI * 2
+);
 
   ctx.fill();
 
