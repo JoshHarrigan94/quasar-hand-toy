@@ -43,7 +43,37 @@ export function assignGravityPath(index, total) {
 }
 
 export function getInfinityCoreTarget(particle, index = 0) {
-  const scene = state.scene?.current || "dormant";
+  const current = state.scene?.current || "dormant";
+  const previous = state.scene?.previous || current;
+
+  const elapsed = Date.now() - (state.scene?.transitionStartedAt || Date.now());
+  const duration = state.scene?.transitionDuration || 2600;
+
+  const rawT = Math.min(1, elapsed / duration);
+  const t = rawT * rawT * (3 - 2 * rawT);
+
+  state.scene.transition = t;
+
+  if (t >= 1 || previous === current) {
+    return getSceneTarget(current, particle, index);
+  }
+
+  const from = getSceneTarget(previous, particle, index);
+  const to = getSceneTarget(current, particle, index);
+
+  return targetResponse({
+    x: from.x + (to.x - from.x) * t,
+    y: from.y + (to.y - from.y) * t,
+    pull: from.pull + (to.pull - from.pull) * t,
+    orbit: from.orbit + (to.orbit - from.orbit) * t,
+    drag: from.drag + (to.drag - from.drag) * t,
+    path: to.path,
+    lock: from.lock + (to.lock - from.lock) * t
+  });
+}
+
+function getSceneTarget(scene, particle, index = 0) {
+  scene = scene || "dormant";
 
   if (scene === "saturn") return getSaturnRail(particle, index);
   if (scene === "cube") return getCubeRail(particle, index);
