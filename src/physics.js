@@ -405,6 +405,7 @@ function applyInfinityCorePhysics(particle, index) {
   const pathVariance = 0.82 + particle.pathBias * 0.28;
 
   const scenePhysics = getScenePhysics();
+const gravityPhysics = getGravityModePhysics();
 
   const pull =
   target.pull *
@@ -425,7 +426,8 @@ function applyInfinityCorePhysics(particle, index) {
   particle.depth *
   opennessBoost *
   pathVariance *
-  scenePhysics.orbit;
+  scenePhysics.orbit *
+  gravityPhysics.orbit;
 
 particle.vy +=
   ty *
@@ -433,7 +435,8 @@ particle.vy +=
   particle.depth *
   opennessBoost *
   pathVariance *
-  scenePhysics.orbit;
+  scenePhysics.orbit *
+  gravityPhysics.orbit;
 
   particle.vx *= target.drag;
   particle.vy *= target.drag;
