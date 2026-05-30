@@ -1,4 +1,4 @@
-import("./src/main.js").catch((error) => {
+import("./src/main.js?v=15e2").catch((error) => {
   console.error("BOOT FAILURE:", error);
 
   const box = document.createElement("pre");
