@@ -6,6 +6,35 @@ function isSmallScreen() {
   return state.width < 700;
 }
 
+function getSceneVisuals() {
+  const scene = state.scene?.current || "dormant";
+
+  if (scene === "reveal") {
+    return {
+      brightness: 1.16,
+      size: 1.02,
+      pathAlpha: 1.18,
+      coreDarkness: 0.998
+    };
+  }
+
+  if (scene === "disturbed") {
+    return {
+      brightness: 1.08,
+      size: 1.04,
+      pathAlpha: 1.08,
+      coreDarkness: 0.996
+    };
+  }
+
+  return {
+    brightness: 0.92,
+    size: 0.96,
+    pathAlpha: 0.92,
+    coreDarkness: 0.999
+  };
+}
+
 export function clearCanvas() {
   const ctx = state.ctx;
   const awake = state.artifact.awakeLevel;
@@ -65,7 +94,8 @@ export function drawCore() {
   }
 
   ctx.beginPath();
-  ctx.fillStyle = "rgba(0,0,0,0.999)";
+  const sceneVisuals = getSceneVisuals();
+ctx.fillStyle = `rgba(0,0,0,${sceneVisuals.coreDarkness})`;
   ctx.arc(cx, cy, Math.max(unit * 0.04, voidRadius), 0, Math.PI * 2);
   ctx.fill();
 }
@@ -222,6 +252,7 @@ export function drawParticle(particle) {
   const ctx = state.ctx;
   const visuals = getLayerVisuals(particle);
   const pathVisuals = getPathVisuals(particle);
+  const sceneVisuals = getSceneVisuals();
 
   const dx = particle.x - state.width / 2;
   const dy = particle.y - state.height / 2;
@@ -253,12 +284,13 @@ export function drawParticle(particle) {
       speed * visuals.alphaSpeed
     ) *
     twinkle *
-    pathVisuals.alpha;
+pathVisuals.alpha *
+sceneVisuals.pathAlpha;
 
   ctx.beginPath();
 
   ctx.fillStyle = `hsla(${particleHue}, ${visuals.saturation}%, ${
-    visuals.lightness + pathVisuals.lightness + glow * 6 + speed * 3
+    (visuals.lightness + pathVisuals.lightness + glow * 6 + speed * 3) * sceneVisuals.brightness
   }%, ${Math.min(0.92, alpha)})`;
 
   ctx.arc(
@@ -270,6 +302,7 @@ export function drawParticle(particle) {
   pathVisuals.size *
   sizeBoost *
   0.88 *
+  sceneVisuals.size *
       (particle.spark ? 1.15 : 1)
     0,
     Math.PI * 2
