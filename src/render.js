@@ -9,49 +9,27 @@ function isSmallScreen() {
 function getSceneVisuals() {
   const scene = state.scene?.current || "dormant";
 
-  if (scene === "saturn") {
-    return { brightness: 1.1, size: 0.96, pathAlpha: 1.38, coreDarkness: 0.999 };
-  }
+  if (scene === "helix") return { brightness: 1.18, size: 0.9, pathAlpha: 1.6, coreDarkness: 0.998 };
+  if (scene === "galaxy") return { brightness: 1.12, size: 0.92, pathAlpha: 1.5, coreDarkness: 0.998 };
+  if (scene === "orbital") return { brightness: 1.12, size: 0.94, pathAlpha: 1.46, coreDarkness: 0.998 };
+  if (scene === "eye") return { brightness: 1.16, size: 0.95, pathAlpha: 1.55, coreDarkness: 0.999 };
+  if (scene === "flower") return { brightness: 1.14, size: 0.92, pathAlpha: 1.52, coreDarkness: 0.998 };
 
-  if (scene === "cube") {
-    return { brightness: 1.15, size: 0.94, pathAlpha: 1.46, coreDarkness: 0.999 };
-  }
-
-  if (scene === "wave") {
-    return { brightness: 1.13, size: 0.9, pathAlpha: 1.36, coreDarkness: 0.998 };
-  }
-
-  if (scene === "reveal") {
-    return { brightness: 1.18, size: 0.96, pathAlpha: 1.42, coreDarkness: 0.998 };
-  }
-
-  if (scene === "disturbed") {
-    return { brightness: 1.08, size: 1.0, pathAlpha: 1.18, coreDarkness: 0.996 };
-  }
+  if (scene === "saturn") return { brightness: 1.1, size: 0.96, pathAlpha: 1.38, coreDarkness: 0.999 };
+  if (scene === "cube") return { brightness: 1.15, size: 0.94, pathAlpha: 1.46, coreDarkness: 0.999 };
+  if (scene === "wave") return { brightness: 1.13, size: 0.9, pathAlpha: 1.36, coreDarkness: 0.998 };
+  if (scene === "reveal") return { brightness: 1.18, size: 0.96, pathAlpha: 1.42, coreDarkness: 0.998 };
+  if (scene === "disturbed") return { brightness: 1.08, size: 1.0, pathAlpha: 1.18, coreDarkness: 0.996 };
 
   return { brightness: 0.98, size: 0.92, pathAlpha: 1, coreDarkness: 0.999 };
 }
 
 function getLaneVisuals(particle) {
-  if (particle.shapeLane === "primary") {
-    return { alpha: 2.35, size: 1.08, lightness: 18, trail: 1.6 };
-  }
-
-  if (particle.shapeLane === "secondary") {
-    return { alpha: 1.05, size: 0.82, lightness: 2, trail: 0.75 };
-  }
-
-  if (particle.shapeLane === "background") {
-    return { alpha: 0.22, size: 0.52, lightness: -16, trail: 0.18 };
-  }
-
-  if (particle.shapeLane === "accent") {
-    return { alpha: 2.8, size: 1.18, lightness: 24, trail: 1.9 };
-  }
-
-  if (particle.shapeLane === "core") {
-    return { alpha: 1.45, size: 1.04, lightness: 8, trail: 0.9 };
-  }
+  if (particle.shapeLane === "primary") return { alpha: 2.35, size: 1.08, lightness: 18, trail: 1.6 };
+  if (particle.shapeLane === "secondary") return { alpha: 1.05, size: 0.82, lightness: 2, trail: 0.75 };
+  if (particle.shapeLane === "background") return { alpha: 0.22, size: 0.52, lightness: -16, trail: 0.18 };
+  if (particle.shapeLane === "accent") return { alpha: 2.8, size: 1.18, lightness: 24, trail: 1.9 };
+  if (particle.shapeLane === "core") return { alpha: 1.45, size: 1.04, lightness: 8, trail: 0.9 };
 
   return { alpha: 1, size: 1, lightness: 0, trail: 1 };
 }
@@ -59,15 +37,43 @@ function getLaneVisuals(particle) {
 function getGeometryVisuals(particle) {
   const scene = state.scene?.current || "dormant";
 
+  if (scene === "helix") {
+    if (particle.shapeLane === "primary") return { alpha: 2.2, size: 0.76, lightness: 24, trail: 2.25 };
+    if (particle.shapeLane === "secondary") return { alpha: 1.05, size: 0.66, lightness: 6, trail: 1.2 };
+    return { alpha: 0.34, size: 0.56, lightness: -14, trail: 0.28 };
+  }
+
+  if (scene === "galaxy") {
+    if (particle.shapeLane === "primary") return { alpha: 2.0, size: 0.86, lightness: 20, trail: 2.0 };
+    if (particle.shapeLane === "secondary") return { alpha: 1.0, size: 0.72, lightness: 4, trail: 1.1 };
+    if (particle.shapeLane === "core") return { alpha: 1.55, size: 1.0, lightness: 10, trail: 0.8 };
+    return { alpha: 0.36, size: 0.58, lightness: -12, trail: 0.3 };
+  }
+
+  if (scene === "orbital") {
+    if (particle.shapeLane === "primary") return { alpha: 1.95, size: 0.82, lightness: 20, trail: 1.65 };
+    if (particle.shapeLane === "secondary") return { alpha: 1.1, size: 0.7, lightness: 5, trail: 0.95 };
+    if (particle.shapeLane === "core") return { alpha: 1.55, size: 1.05, lightness: 10, trail: 0.75 };
+    return { alpha: 0.34, size: 0.58, lightness: -12, trail: 0.28 };
+  }
+
+  if (scene === "eye") {
+    if (particle.shapeLane === "primary") return { alpha: 2.25, size: 0.88, lightness: 24, trail: 1.25 };
+    if (particle.shapeLane === "secondary") return { alpha: 1.35, size: 0.74, lightness: 8, trail: 0.95 };
+    if (particle.shapeLane === "core") return { alpha: 1.9, size: 1.08, lightness: 12, trail: 0.7 };
+    return { alpha: 0.4, size: 0.6, lightness: -10, trail: 0.25 };
+  }
+
+  if (scene === "flower") {
+    if (particle.shapeLane === "primary") return { alpha: 2.05, size: 0.82, lightness: 22, trail: 1.55 };
+    if (particle.shapeLane === "secondary") return { alpha: 1.15, size: 0.7, lightness: 5, trail: 0.95 };
+    if (particle.shapeLane === "accent") return { alpha: 2.5, size: 1.0, lightness: 28, trail: 1.8 };
+    return { alpha: 0.38, size: 0.58, lightness: -12, trail: 0.3 };
+  }
+
   if (scene === "saturn") {
-    if (particle.shapeLane === "primary") {
-      return { alpha: 1.85, size: 1.02, lightness: 18, trail: 1.8 };
-    }
-
-    if (particle.shapeLane === "core") {
-      return { alpha: 1.35, size: 1, lightness: 8, trail: 0.7 };
-    }
-
+    if (particle.shapeLane === "primary") return { alpha: 1.85, size: 1.02, lightness: 18, trail: 1.8 };
+    if (particle.shapeLane === "core") return { alpha: 1.35, size: 1, lightness: 8, trail: 0.7 };
     return { alpha: 0.48, size: 0.7, lightness: -10, trail: 0.32 };
   }
 
@@ -80,21 +86,14 @@ function getGeometryVisuals(particle) {
   }
 
   if (scene === "wave") {
-    if (particle.shapeLane === "primary") {
-      return { alpha: 1.95, size: 0.72, lightness: 20, trail: 2.1 };
-    }
-
-    if (particle.shapeLane === "secondary") {
-      return { alpha: 0.9, size: 0.66, lightness: 4, trail: 1.15 };
-    }
+    if (particle.shapeLane === "primary") return { alpha: 1.95, size: 0.72, lightness: 20, trail: 2.1 };
+    if (particle.shapeLane === "secondary") return { alpha: 0.9, size: 0.66, lightness: 4, trail: 1.15 };
 
     return { alpha: 0.36, size: 0.58, lightness: -12, trail: 0.32 };
   }
 
   if (scene === "reveal") {
-    if (particle.shapeLane === "primary") {
-      return { alpha: 2.0, size: 0.92, lightness: 20, trail: 1.7 };
-    }
+    if (particle.shapeLane === "primary") return { alpha: 2.0, size: 0.92, lightness: 20, trail: 1.7 };
 
     return { alpha: 0.48, size: 0.7, lightness: -8, trail: 0.4 };
   }
