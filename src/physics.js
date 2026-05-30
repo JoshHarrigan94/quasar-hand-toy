@@ -101,9 +101,8 @@ function getGravityModePhysics() {
   };
 }
 
-function getRolePhysics(particle) {
-  if (particle.shapeLane === "primary") {
-  return { pull: 1.45, orbit: 0.72, pointer: 0.55 };
+if (particle.shapeLane === "primary") {
+  return { pull: 1.25, orbit: 0.9, pointer: 0.82 };
 }
   
   if (particle.role === "core") {
@@ -447,7 +446,7 @@ function applyInfinityCorePhysics(particle, index) {
   const target = getInfinityCoreTarget(particle, index);
   if (!target) return;
   const lockStrength = target.lock || 1;
-
+  const elasticLock = Math.min(lockStrength, 1.8);
 
   const scenePhysics = getScenePhysics();
   const gravityPhysics = getGravityModePhysics();
@@ -493,7 +492,7 @@ function applyInfinityCorePhysics(particle, index) {
   gravityPhysics.pull *
   rolePhysics.pull *
   shapeAuthority *
-  lockStrength;
+elasticLock;
 
   particle.vx += nx * pull;
   particle.vy += ny * pull;
@@ -514,7 +513,7 @@ function applyInfinityCorePhysics(particle, index) {
 particle.vy *= target.drag;
 
 if (lockStrength > 1) {
-  const railCorrection = 0.08 * lockStrength;
+  const railCorrection = 0.018 * lockStrength;
 
   particle.x += dx * railCorrection;
   particle.y += dy * railCorrection;
