@@ -28,16 +28,16 @@ export function updateArtifactStatus() {
   const label = state.artifact?.stateLabel || "Dormant";
 
   const copy = {
-    Dormant: "Dormant. Suspended in the void.",
-    Listening: "Listening. It has noticed movement nearby.",
-    Breathing: "Breathing. The field is settling into order.",
-    Revealing: "Revealing. Hidden paths are becoming visible.",
-    Awake: "Awake. The core is responding.",
-    Compressed: "Compressed. Matter is folding inward.",
-    Expanded: "Expanded. The halo is opening.",
-    Disturbed: "Disturbed. Gravity waves are moving through it.",
-    Unstable: "Unstable. The field is losing coherence."
-  };
+  Dormant: "Dormant. Suspended beyond scale.",
+  Listening: "Listening. The field has detected presence.",
+  Breathing: "Breathing. The structure is settling.",
+  Revealing: "Revealing. Hidden geometry is emerging.",
+  Awake: "Awake. The core is aware of interference.",
+  Compressed: "Compressed. Matter is folding inward.",
+  Expanded: "Expanded. The outer field is widening.",
+  Disturbed: "Disturbed. A gravity wave has passed through.",
+  Unstable: "Unstable. The structure is losing coherence."
+};
 
   if (state.ui.statusText) {
     state.ui.statusText.textContent = copy[label] || copy.Dormant;
@@ -233,7 +233,15 @@ export function bindUiControls({ onCameraStart } = {}) {
   document.querySelectorAll("button[data-mode]").forEach((button) => {
     button.addEventListener("click", () => {
       setMode(button.dataset.mode);
-      setGesture(`${button.textContent} influence`);
+      const gestureCopy = {
+  pull: "Collapse",
+  push: "Expansion",
+  spin: "Rotation",
+  storm: "Disturbance",
+  calm: "Stillness"
+};
+
+setGesture(gestureCopy[button.dataset.mode] || "Presence");
       noteUiInteraction();
     });
   });
