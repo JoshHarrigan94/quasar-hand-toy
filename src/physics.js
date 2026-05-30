@@ -690,6 +690,8 @@ export function updateParticlePhysics(particle, index) {
   particle.vx *= CONFIG.physics.drag * gravityPhysics.drag;
   particle.vy *= CONFIG.physics.drag * gravityPhysics.drag;
 
+  applyAntiStallDrift(particle, index);
+
   particle.x += particle.vx;
   particle.y += particle.vy;
 
