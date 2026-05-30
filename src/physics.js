@@ -101,10 +101,11 @@ function getGravityModePhysics() {
   };
 }
 
-if (particle.shapeLane === "primary") {
-  return { pull: 1.25, orbit: 0.9, pointer: 0.82 };
-}
-  
+function getRolePhysics(particle) {
+  if (particle.shapeLane === "primary") {
+    return { pull: 1.25, orbit: 0.9, pointer: 0.82 };
+  }
+
   if (particle.role === "core") {
     return { pull: 1.18, orbit: 0.78, pointer: 0.72 };
   }
