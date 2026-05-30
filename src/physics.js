@@ -425,9 +425,14 @@ function applyPointerPhysics(particle) {
 
   const pdist = Math.hypot(pdx, pdy) || 1;
 
-  if (pdist > CONFIG.physics.pointerRadius) return;
+  const modeRadius =
+    state.mode === "spin"
+      ? CONFIG.physics.pointerRadius * 1.85
+      : CONFIG.physics.pointerRadius;
 
-  const influence = 1 - pdist / CONFIG.physics.pointerRadius;
+  if (pdist > modeRadius) return;
+
+  const influence = 1 - pdist / modeRadius;
   const energyScale = 0.45 + state.energy / CONFIG.energy.max;
 
   const force =
@@ -465,13 +470,18 @@ function applyPointerPhysics(particle) {
 
   if (state.mode === "spin") {
     wakeArtifact({
-      awake: 0.00042,
-      disturbance: 0.00025,
-      openness: 0.00014
+      awake: 0.00052,
+      disturbance: 0.00032,
+      openness: 0.00018
     });
 
-    particle.vx += -py * force * 1.05;
-    particle.vy += px * force * 1.05;
+    const rotateForce =
+      force *
+      0.72 *
+      (0.55 + influence * 0.45);
+
+    particle.vx += -py * rotateForce;
+    particle.vy += px * rotateForce;
   }
 
   if (state.mode === "storm") {
