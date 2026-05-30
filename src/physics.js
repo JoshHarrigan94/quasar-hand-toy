@@ -774,6 +774,15 @@ function applyPointerPhysics(particle) {
 memoryPhysics.pointer *
 rolePhysics.pointer;
 
+if (particle.deformation) {
+  particle.deformation.strength = Math.min(
+    1,
+    particle.deformation.strength + influence * 0.035
+  );
+
+  particle.deformation.lastDisturbedAt = Date.now();
+}
+
   const px = pdx / pdist;
   const py = pdy / pdist;
 
@@ -787,6 +796,10 @@ rolePhysics.pointer;
 
     particle.vx += px * force * 0.72;
     particle.vy += py * force * 0.72;
+    if (particle.deformation) {
+  particle.deformation.x += px * force * 0.9;
+  particle.deformation.y += py * force * 0.9;
+}
   }
 
   if (state.mode === "push") {
@@ -799,6 +812,11 @@ rolePhysics.pointer;
 
     particle.vx -= px * force * 0.78;
     particle.vy -= py * force * 0.78;
+    
+    if (particle.deformation) {
+  particle.deformation.x += px * force * 0.9;
+  particle.deformation.y += py * force * 0.9;
+}
   }
 
   if (state.mode === "spin") {
@@ -815,6 +833,11 @@ rolePhysics.pointer;
 
     particle.vx += -py * rotateForce;
     particle.vy += px * rotateForce;
+    
+    if (particle.deformation) {
+  particle.deformation.x += -py * rotateForce * 0.9;
+  particle.deformation.y += px * rotateForce * 0.9;
+}
   }
 
   if (state.mode === "storm") {
@@ -828,6 +851,11 @@ rolePhysics.pointer;
     particle.vy += px * force * 0.56;
     particle.vx -= px * force * 0.42;
     particle.vy -= py * force * 0.42;
+    
+    if (particle.deformation) {
+  particle.deformation.x += (-py - px) * force * 0.8;
+  particle.deformation.y += (px - py) * force * 0.8;
+}
   }
 
   if (state.mode === "calm") {
