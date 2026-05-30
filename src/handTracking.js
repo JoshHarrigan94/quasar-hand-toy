@@ -149,7 +149,7 @@ export async function stopCamera() {
   }
 }
 
-export async function stopCamera() {
+export async function stopInfinityCamera() {
   state.cameraActive = false;
   state.pointer.source = "touch";
   state.pointer.active = false;
@@ -186,4 +186,4 @@ export async function stopCamera() {
   }
 }
 
-window.stopInfinityCamera = stopCamera;
+window.stopInfinityCamera = stopInfinityCamera;
