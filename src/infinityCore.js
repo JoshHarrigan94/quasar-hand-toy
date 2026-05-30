@@ -46,7 +46,9 @@ export function getInfinityCoreTarget(particle, index = 0) {
   if (state.scene?.current === "saturn") {
   return getSaturnTarget(particle, index);
 }
-  
+  if (state.scene?.current === "cube") {
+  return getCubeTarget(particle, index);
+}
   const path = particle.gravityPath || GRAVITY_PATHS.WELL;
   
   if (path === GRAVITY_PATHS.WELL) return getWellTarget(particle, index);
@@ -244,6 +246,53 @@ function getParabolaTarget(particle, index) {
     orbit: 0.0024,
     drag: 0.998,
     path: GRAVITY_PATHS.PARABOLA
+  };
+}
+
+function getCubeTarget(particle, index) {
+  const { cx, cy, unit, pathBand, phase, scale, layerScale } =
+    getBaseValues(particle, index);
+
+  const size =
+    unit *
+    scale *
+    layerScale *
+    (0.18 + pathBand * 0.18);
+
+  const t = (phase * 0.12 + particle.pathBias * 4) % 4;
+  const side = Math.floor(t);
+  const local = t - side;
+
+  let x = 0;
+  let y = 0;
+
+  if (side === 0) {
+    x = -size + local * size * 2;
+    y = -size;
+  } else if (side === 1) {
+    x = size;
+    y = -size + local * size * 2;
+  } else if (side === 2) {
+    x = size - local * size * 2;
+    y = size;
+  } else {
+    x = -size;
+    y = size - local * size * 2;
+  }
+
+  const perspective = 0.58;
+  const tilt = -0.18;
+
+  const rotatedX = x * Math.cos(tilt) - y * perspective * Math.sin(tilt);
+  const rotatedY = x * Math.sin(tilt) + y * perspective * Math.cos(tilt);
+
+  return {
+    x: cx + rotatedX,
+    y: cy + rotatedY,
+    pull: 0.0076,
+    orbit: 0.0044,
+    drag: 0.997,
+    path: "cube"
   };
 }
 
