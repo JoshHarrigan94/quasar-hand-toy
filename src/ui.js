@@ -269,6 +269,13 @@ setGesture(gestureCopy[button.dataset.mode] || "Presence");
     });
   });
 
+  if (state.ui.sceneBtn) {
+  state.ui.sceneBtn.addEventListener("click", () => {
+    cycleScene();
+    noteUiInteraction();
+  });
+}
+
   if (state.ui.resetBtn) {
     state.ui.resetBtn.addEventListener("click", resetField);
   }
