@@ -17,6 +17,14 @@ import {
 } from "./physics.js";
 
 export function updatePointer(clientX, clientY, source = "touch") {
+  if (
+  document
+    .elementFromPoint(clientX, clientY)
+    ?.closest(".hud, .ui-toggle")
+) {
+  return;
+}
+  
   const pointer = state.pointer;
 
   pointer.prevX = pointer.x || clientX;
