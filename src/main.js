@@ -23,6 +23,7 @@ function cacheDomElements() {
   state.ui.cameraFeed = document.getElementById("cameraFeed");
   
   state.ui.sceneBtn = document.getElementById("sceneBtn");
+  state.ui.gravityBtn = document.getElementById("gravityBtn");
 }
 
 function setupCanvas() {
