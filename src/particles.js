@@ -20,65 +20,87 @@ function isSmallScreen() {
 function assignParticleRole(index, total) {
   const t = index / total;
 
-  if (t < 0.12) return "core";
-  if (t < 0.42) return "structure";
-  if (t < 0.74) return "field";
-  if (t < 0.94) return "veil";
+  if (t < 0.1) return "core";
+  if (t < 0.72) return "structure";
+  if (t < 0.86) return "field";
+  if (t < 0.96) return "veil";
 
   return "accent";
 }
 
-function getInitialRadius(path, role, maxRadius) {
-  if (role === "core") {
-    return maxRadius * (0.025 + Math.random() * 0.08);
-  }
+function assignShapeLane(index, total) {
+  const t = index / total;
 
-  if (role === "structure") {
-    if (path === GRAVITY_PATHS.WELL) return maxRadius * (0.04 + Math.random() * 0.1);
-    if (path === GRAVITY_PATHS.TORUS) return maxRadius * (0.18 + Math.random() * 0.18);
-    if (path === GRAVITY_PATHS.INFINITY) return maxRadius * (0.14 + Math.random() * 0.2);
-    if (path === GRAVITY_PATHS.SINE) return maxRadius * (0.18 + Math.random() * 0.26);
-    if (path === GRAVITY_PATHS.PARABOLA) return maxRadius * (0.18 + Math.random() * 0.28);
+  if (t < 0.12) return "core";
+  if (t < 0.72) return "primary";
+  if (t < 0.86) return "secondary";
+  if (t < 0.96) return "background";
 
-    return maxRadius * (0.22 + Math.random() * 0.3);
-  }
-
-  if (role === "field") {
-    return maxRadius * (0.16 + Math.random() * 0.38);
-  }
-
-  if (role === "veil") {
-    return maxRadius * (0.28 + Math.random() * 0.46);
-  }
-
-  return maxRadius * (0.1 + Math.random() * 0.42);
+  return "accent";
 }
 
-function getRoleSize(role, phone) {
-  if (role === "core") return phone ? 0.54 + Math.random() * 0.9 : 0.42 + Math.random() * 0.72;
-  if (role === "structure") return phone ? 0.48 + Math.random() * 0.82 : 0.38 + Math.random() * 0.66;
-  if (role === "field") return phone ? 0.42 + Math.random() * 0.68 : 0.32 + Math.random() * 0.54;
-  if (role === "veil") return phone ? 0.34 + Math.random() * 0.48 : 0.26 + Math.random() * 0.38;
+function getInitialRadius(path, role, lane, maxRadius) {
+  if (lane === "core" || role === "core") {
+    return maxRadius * (0.02 + Math.random() * 0.07);
+  }
 
-  return phone ? 0.58 + Math.random() * 1.05 : 0.46 + Math.random() * 0.86;
+  if (lane === "primary") {
+    return maxRadius * (0.14 + Math.random() * 0.28);
+  }
+
+  if (lane === "secondary") {
+    return maxRadius * (0.2 + Math.random() * 0.34);
+  }
+
+  if (lane === "background") {
+    return maxRadius * (0.34 + Math.random() * 0.44);
+  }
+
+  return maxRadius * (0.1 + Math.random() * 0.38);
 }
 
-function getRoleDepth(role) {
-  if (role === "core") return 0.55 + Math.random() * 0.75;
-  if (role === "structure") return 0.42 + Math.random() * 0.85;
-  if (role === "field") return 0.25 + Math.random() * 0.85;
-  if (role === "veil") return 0.14 + Math.random() * 0.65;
+function getRoleSize(role, lane, phone) {
+  const phoneScale = phone ? 1.12 : 1;
 
-  return 0.75 + Math.random() * 0.85;
+  if (lane === "primary") return (0.42 + Math.random() * 0.72) * phoneScale;
+  if (lane === "secondary") return (0.34 + Math.random() * 0.56) * phoneScale;
+  if (lane === "background") return (0.24 + Math.random() * 0.34) * phoneScale;
+  if (lane === "accent") return (0.52 + Math.random() * 0.92) * phoneScale;
+
+  if (role === "core") return (0.46 + Math.random() * 0.78) * phoneScale;
+  if (role === "structure") return (0.4 + Math.random() * 0.64) * phoneScale;
+  if (role === "field") return (0.32 + Math.random() * 0.48) * phoneScale;
+  if (role === "veil") return (0.24 + Math.random() * 0.32) * phoneScale;
+
+  return (0.42 + Math.random() * 0.62) * phoneScale;
 }
 
-function getRolePull(role) {
-  if (role === "core") return 0.34 + Math.random() * 0.52;
-  if (role === "structure") return 0.42 + Math.random() * 0.62;
-  if (role === "field") return 0.22 + Math.random() * 0.46;
-  if (role === "veil") return 0.12 + Math.random() * 0.28;
+function getRoleDepth(role, lane) {
+  if (lane === "primary") return 0.55 + Math.random() * 0.75;
+  if (lane === "secondary") return 0.36 + Math.random() * 0.75;
+  if (lane === "background") return 0.12 + Math.random() * 0.55;
+  if (lane === "accent") return 0.8 + Math.random() * 0.75;
 
-  return 0.5 + Math.random() * 0.7;
+  if (role === "core") return 0.58 + Math.random() * 0.72;
+  if (role === "structure") return 0.48 + Math.random() * 0.8;
+  if (role === "field") return 0.25 + Math.random() * 0.75;
+  if (role === "veil") return 0.12 + Math.random() * 0.6;
+
+  return 0.4 + Math.random() * 0.75;
+}
+
+function getRolePull(role, lane) {
+  if (lane === "primary") return 0.72 + Math.random() * 0.5;
+  if (lane === "secondary") return 0.44 + Math.random() * 0.42;
+  if (lane === "background") return 0.12 + Math.random() * 0.24;
+  if (lane === "accent") return 0.8 + Math.random() * 0.7;
+
+  if (role === "core") return 0.44 + Math.random() * 0.52;
+  if (role === "structure") return 0.58 + Math.random() * 0.52;
+  if (role === "field") return 0.22 + Math.random() * 0.42;
+  if (role === "veil") return 0.1 + Math.random() * 0.22;
+
+  return 0.34 + Math.random() * 0.5;
 }
 
 export function createParticles() {
@@ -97,9 +119,10 @@ export function createParticles() {
   for (let i = 0; i < particleCount; i++) {
     const gravityPath = assignGravityPath(i, particleCount);
     const role = assignParticleRole(i, particleCount);
+    const shapeLane = assignShapeLane(i, particleCount);
 
     const angle = Math.random() * Math.PI * 2;
-    const radius = getInitialRadius(gravityPath, role, maxRadius);
+    const radius = getInitialRadius(gravityPath, role, shapeLane, maxRadius);
 
     const x = cx + Math.cos(angle) * radius;
     const y =
@@ -110,19 +133,19 @@ export function createParticles() {
 
     const tangent = angle + Math.PI / 2;
 
-    const roleSpeed =
-      role === "structure"
-        ? 0.18
-        : role === "accent"
-          ? 0.22
-          : role === "veil"
-            ? 0.08
-            : 0.14;
+    const laneSpeed =
+      shapeLane === "primary"
+        ? 0.13
+        : shapeLane === "accent"
+          ? 0.2
+          : shapeLane === "background"
+            ? 0.055
+            : 0.1;
 
     const speed =
-      0.018 +
+      0.014 +
       Math.random() *
-        (phone ? roleSpeed * 0.72 : roleSpeed);
+        (phone ? laneSpeed * 0.68 : laneSpeed);
 
     state.particles.push({
       x,
@@ -131,23 +154,24 @@ export function createParticles() {
       vx: Math.cos(tangent) * speed,
       vy: Math.sin(tangent) * speed,
 
-      size: getRoleSize(role, phone),
-      depth: getRoleDepth(role),
+      size: getRoleSize(role, shapeLane, phone),
+      depth: getRoleDepth(role, shapeLane),
 
       role,
+      shapeLane,
 
-      spark: role === "accent" ? Math.random() > 0.92 : Math.random() > 0.997,
+      spark: shapeLane === "accent" ? Math.random() > 0.86 : Math.random() > 0.998,
       pulse: Math.random() * Math.PI * 2,
 
       structureId: chooseStructureForParticle(i, particleCount),
       structureBand: Math.random(),
       structurePhase: Math.random() * Math.PI * 2,
-      structurePull: getRolePull(role),
+      structurePull: getRolePull(role, shapeLane),
 
       layer: assignCoreLayer(i, particleCount),
       layerPhase: Math.random() * Math.PI * 2,
       layerBand: Math.random(),
-      layerPull: getRolePull(role),
+      layerPull: getRolePull(role, shapeLane),
 
       gravityPath,
       pathPhase: Math.random() * Math.PI * 2,
@@ -163,18 +187,18 @@ export function respawnParticleNearCore(particle) {
 
   const angle = Math.random() * Math.PI * 2;
 
-  let maxRespawnRadius = Math.min(state.width, state.height) * 0.24;
+  let maxRespawnRadius = Math.min(state.width, state.height) * 0.22;
 
-  if (particle.role === "veil") {
+  if (particle.shapeLane === "background") {
     maxRespawnRadius = Math.min(state.width, state.height) * 0.46;
   }
 
-  if (particle.role === "field") {
-    maxRespawnRadius = Math.min(state.width, state.height) * 0.34;
+  if (particle.shapeLane === "secondary") {
+    maxRespawnRadius = Math.min(state.width, state.height) * 0.32;
   }
 
-  if (particle.role === "core") {
-    maxRespawnRadius = Math.min(state.width, state.height) * 0.12;
+  if (particle.shapeLane === "core") {
+    maxRespawnRadius = Math.min(state.width, state.height) * 0.1;
   }
 
   const radius = Math.random() * maxRespawnRadius;
@@ -186,6 +210,6 @@ export function respawnParticleNearCore(particle) {
       radius *
       CONFIG.particles.verticalCompression;
 
-  particle.vx *= -0.06;
-  particle.vy *= -0.06;
+  particle.vx *= -0.05;
+  particle.vy *= -0.05;
 }
