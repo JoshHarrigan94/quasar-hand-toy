@@ -446,6 +446,8 @@ function applyCoreGalaxyPhysics(particle) {
 function applyInfinityCorePhysics(particle, index) {
   const target = getInfinityCoreTarget(particle, index);
   if (!target) return;
+  const lockStrength = target.lock || 1;
+
 
   const scenePhysics = getScenePhysics();
   const gravityPhysics = getGravityModePhysics();
@@ -481,16 +483,17 @@ function applyInfinityCorePhysics(particle, index) {
         : 1;
 
   const pull =
-    target.pull *
-    particle.layerPull *
-    particle.depth *
-    pressureBoost *
-    pathVariance *
-    stillnessReveal *
-    scenePhysics.pull *
-    gravityPhysics.pull *
-    rolePhysics.pull *
-    shapeAuthority;
+  target.pull *
+  particle.layerPull *
+  particle.depth *
+  pressureBoost *
+  pathVariance *
+  stillnessReveal *
+  scenePhysics.pull *
+  gravityPhysics.pull *
+  rolePhysics.pull *
+  shapeAuthority *
+  lockStrength;
 
   particle.vx += nx * pull;
   particle.vy += ny * pull;
@@ -508,7 +511,14 @@ function applyInfinityCorePhysics(particle, index) {
   particle.vy += ty * orbit;
 
   particle.vx *= target.drag;
-  particle.vy *= target.drag;
+particle.vy *= target.drag;
+
+if (lockStrength > 1) {
+  const railCorrection = 0.08 * lockStrength;
+
+  particle.x += dx * railCorrection;
+  particle.y += dy * railCorrection;
+}
 }
 
 function applyStructurePhysics(particle, index) {
