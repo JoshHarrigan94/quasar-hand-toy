@@ -21,7 +21,7 @@ function cacheDomElements() {
   state.ui.resetBtn = document.getElementById("resetBtn");
 
   state.ui.cameraFeed = document.getElementById("cameraFeed");
-  
+  state.ui.memoryText = document.getElementById("memoryText");
   state.ui.sceneBtn = document.getElementById("sceneBtn");
   state.ui.gravityBtn = document.getElementById("gravityBtn");
 }
