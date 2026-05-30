@@ -654,7 +654,12 @@ function applyInfinityCorePhysics(particle, index) {
   if (!target) return;
 
   const lockStrength = target.lock || 1;
-  const elasticLock = Math.min(lockStrength, 1.8);
+  const transition = state.scene?.transition ?? 1;
+const transitionLooseness = 1 - Math.abs(transition - 0.5) * 2;
+
+const elasticLock =
+  Math.min(lockStrength, 1.8) *
+  (1 - transitionLooseness * 0.35);
 
   const scenePhysics = getScenePhysics();
   const gravityPhysics = getGravityModePhysics();
