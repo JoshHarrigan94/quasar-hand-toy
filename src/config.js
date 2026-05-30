@@ -1,7 +1,7 @@
 export const CONFIG = {
   particles: {
-    mobileCount: 3000,
-    desktopCount: 5400,
+    mobileCount: 5200,
+    desktopCount: 9000,
     maxDevicePixelRatio: 2,
     respawnPadding: 220,
     galaxyRadiusFactor: 0.66,
