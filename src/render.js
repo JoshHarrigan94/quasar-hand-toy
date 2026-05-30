@@ -294,19 +294,19 @@ sceneVisuals.pathAlpha;
   }%, ${Math.min(0.92, alpha)})`;
 
   ctx.arc(
-    particle.x,
-    particle.y,
-    particle.size *
-  particle.depth *
-  visuals.size *
-  pathVisuals.size *
-  sizeBoost *
-  0.88 *
-  sceneVisuals.size *
-      (particle.spark ? 1.15 : 1)
-    0,
-    Math.PI * 2
-  );
+  particle.x,
+  particle.y,
+  particle.size *
+    particle.depth *
+    visuals.size *
+    pathVisuals.size *
+    sizeBoost *
+    0.88 *
+    sceneVisuals.size *
+    (particle.spark ? 1.15 : 1),
+  0,
+  Math.PI * 2
+);
 
   ctx.fill();
 
