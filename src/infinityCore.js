@@ -51,6 +51,12 @@ export function getInfinityCoreTarget(particle, index = 0) {
   if (scene === "reveal") return getInfinityRail(particle, index);
   if (scene === "disturbed") return getDisturbedRail(particle, index);
 
+  if (scene === "helix") return getHelixRail(particle, index);
+  if (scene === "galaxy") return getGalaxyRail(particle, index);
+  if (scene === "orbital") return getOrbitalRail(particle, index);
+  if (scene === "eye") return getEyeRail(particle, index);
+  if (scene === "flower") return getFlowerRail(particle, index);
+
   return getDormantRail(particle, index);
 }
 
@@ -220,8 +226,7 @@ function getSaturnRail(particle, index) {
     Math.sin(t) *
     (baseRadius * 0.22 + Math.sin(t * 2.7 + band * 5) * railThickness);
 
-  const tilt = -0.02;
-  const p = rotatePoint(x, y, tilt);
+  const p = rotatePoint(x, y, -0.02);
 
   return targetResponse({
     x: cx + p.x,
@@ -250,11 +255,7 @@ function getCubeRail(particle, index) {
     (0.2 + band * 0.06) *
     laneScale;
 
-  const railT = getRailPosition(
-    phase * 0.1 + particle.pathBias * 4,
-    4
-  );
-
+  const railT = getRailPosition(phase * 0.1 + particle.pathBias * 4, 4);
   const side = Math.floor(railT);
   const local = railT - side;
 
@@ -283,10 +284,7 @@ function getCubeRail(particle, index) {
     y += Math.sign(y || 1) * cornerSnap * size * 0.12;
   }
 
-  const perspective = 0.58;
-  const tilt = -0.18;
-
-  const projected = rotatePoint(x, y * perspective, tilt);
+  const projected = rotatePoint(x, y * 0.58, -0.18);
 
   return targetResponse({
     x: cx + projected.x,
@@ -304,7 +302,7 @@ function getCubeRail(particle, index) {
 /* -------------------------------- */
 
 function getWaveRail(particle, index) {
-  const { cx, cy, unit, scale, phase, band, lane, laneOffset, laneScale } =
+  const { cx, cy, unit, scale, phase, band, lane, laneOffset } =
     getBaseValues(particle, index);
 
   if (lane === "core") return getCoreWell(particle, index);
@@ -377,6 +375,235 @@ function getInfinityRail(particle, index) {
     drag: 0.999,
     path: "infinity",
     lock: lane === "primary" ? 1.6 : 0.9
+  });
+}
+
+/* -------------------------------- */
+/* HELIX RAIL                       */
+/* -------------------------------- */
+
+function getHelixRail(particle, index) {
+  const { cx, cy, unit, scale, phase, band, lane, laneOffset } =
+    getBaseValues(particle, index);
+
+  if (lane === "core") return getCoreWell(particle, index);
+
+  const height =
+    unit *
+    scale *
+    (0.42 + band * 0.16);
+
+  const radius =
+    unit *
+    scale *
+    (0.07 + band * 0.035);
+
+  const strand =
+    particle.pathBias > 0.5 ? 0 : Math.PI;
+
+  const t = phase * 0.18 + particle.pathBias * Math.PI * 4;
+
+  const y = Math.sin(t * 0.45) * height * 0.5;
+  const x = Math.sin(t + strand) * radius + laneOffset * unit * scale * 0.018;
+
+  const depthPulse = Math.cos(t + strand);
+  const p = rotatePoint(x, y, -0.08);
+
+  return targetResponse({
+    x: cx + p.x,
+    y: cy + p.y + depthPulse * unit * scale * 0.018,
+    pull: lane === "primary" ? 0.055 : lane === "secondary" ? 0.024 : 0.012,
+    orbit: 0.0024,
+    drag: 0.999,
+    path: "helix",
+    lock: lane === "primary" ? 1.65 : 0.9
+  });
+}
+
+/* -------------------------------- */
+/* GALAXY RAIL                      */
+/* -------------------------------- */
+
+function getGalaxyRail(particle, index) {
+  const { cx, cy, unit, scale, phase, band, lane, laneScale } =
+    getBaseValues(particle, index);
+
+  if (lane === "core") return getCoreWell(particle, index);
+
+  const armCount = 3;
+  const arm = Math.floor((particle.pathBias || 0) * armCount);
+  const t = getRailPosition(phase * 0.06 + particle.pathBias, 1);
+
+  const radius =
+    unit *
+    scale *
+    laneScale *
+    (0.055 + t * (0.28 + band * 0.14));
+
+  const angle =
+    t * Math.PI * 4.2 +
+    arm * ((Math.PI * 2) / armCount);
+
+  const spread =
+    (lane === "primary" ? 0.012 : lane === "secondary" ? 0.026 : 0.045) *
+    unit *
+    scale;
+
+  const x = Math.cos(angle) * radius + Math.cos(angle + Math.PI / 2) * spread;
+  const y = Math.sin(angle) * radius * 0.56 + Math.sin(angle + Math.PI / 2) * spread * 0.45;
+
+  const p = rotatePoint(x, y, -0.08);
+
+  return targetResponse({
+    x: cx + p.x,
+    y: cy + p.y,
+    pull: lane === "primary" ? 0.052 : lane === "secondary" ? 0.026 : 0.012,
+    orbit: 0.0048,
+    drag: 0.999,
+    path: "galaxy",
+    lock: lane === "primary" ? 1.55 : 0.85
+  });
+}
+
+/* -------------------------------- */
+/* ORBITAL SYSTEM RAIL              */
+/* -------------------------------- */
+
+function getOrbitalRail(particle, index) {
+  const { cx, cy, unit, scale, phase, band, lane, laneOffset } =
+    getBaseValues(particle, index);
+
+  if (lane === "core") return getCoreWell(particle, index);
+
+  const orbitIndex =
+    lane === "primary"
+      ? Math.floor((particle.pathBias || 0) * 3)
+      : lane === "secondary"
+        ? Math.floor((particle.pathBias || 0) * 4)
+        : 4;
+
+  const orbitRadius =
+    unit *
+    scale *
+    (0.12 + orbitIndex * 0.055 + band * 0.04);
+
+  const eccentricity =
+    orbitIndex % 2 === 0 ? 0.42 : 0.68;
+
+  const t =
+    phase * (0.16 - orbitIndex * 0.018) +
+    particle.pathBias * Math.PI * 2;
+
+  const x = Math.cos(t) * orbitRadius;
+  const y = Math.sin(t) * orbitRadius * eccentricity;
+
+  const tilt = orbitIndex % 2 === 0 ? -0.18 : 0.12;
+  const p = rotatePoint(x, y, tilt);
+
+  return targetResponse({
+    x: cx + p.x,
+    y: cy + p.y + laneOffset * unit * scale * 0.008,
+    pull: lane === "primary" ? 0.05 : lane === "secondary" ? 0.022 : 0.01,
+    orbit: 0.004,
+    drag: 0.999,
+    path: "orbital",
+    lock: lane === "primary" ? 1.5 : 0.8
+  });
+}
+
+/* -------------------------------- */
+/* EYE RAIL                         */
+/* -------------------------------- */
+
+function getEyeRail(particle, index) {
+  const { cx, cy, unit, scale, phase, band, lane, laneOffset, laneScale } =
+    getBaseValues(particle, index);
+
+  if (lane === "core") return getCoreWell(particle, index);
+
+  const t = phase * 0.12 + particle.pathBias * Math.PI * 2;
+
+  if (lane === "primary" || lane === "accent") {
+    const irisRadius =
+      unit *
+      scale *
+      (0.18 + band * 0.05) *
+      laneScale;
+
+    const x = Math.cos(t) * irisRadius;
+    const y = Math.sin(t) * irisRadius * 0.32;
+
+    return targetResponse({
+      x: cx + x,
+      y: cy + y,
+      pull: 0.054,
+      orbit: 0.0022,
+      drag: 0.999,
+      path: "eye",
+      lock: 1.55
+    });
+  }
+
+  const lidWidth =
+    unit *
+    scale *
+    (0.46 + band * 0.08);
+
+  const lidT =
+    (Math.sin(phase * 0.08 + particle.pathBias * Math.PI * 2) + 1) / 2;
+
+  const x = -lidWidth / 2 + lidWidth * lidT;
+  const curve = Math.sin(lidT * Math.PI);
+  const y =
+    (laneOffset > 0 ? 1 : -1) *
+    curve *
+    unit *
+    scale *
+    0.08;
+
+  return targetResponse({
+    x: cx + x,
+    y: cy + y,
+    pull: lane === "secondary" ? 0.022 : 0.009,
+    orbit: 0.0016,
+    drag: 0.999,
+    path: "eye",
+    lock: lane === "secondary" ? 0.9 : 0.45
+  });
+}
+
+/* -------------------------------- */
+/* FLOWER RAIL                      */
+/* -------------------------------- */
+
+function getFlowerRail(particle, index) {
+  const { cx, cy, unit, scale, phase, band, lane, laneOffset } =
+    getBaseValues(particle, index);
+
+  if (lane === "core") return getCoreWell(particle, index);
+
+  const petals = 6;
+  const t = phase * 0.12 + particle.pathBias * Math.PI * 2;
+
+  const petalWave = Math.cos(petals * t);
+  const radius =
+    unit *
+    scale *
+    (0.12 + band * 0.035 + Math.abs(petalWave) * 0.12);
+
+  const x = Math.cos(t) * radius;
+  const y = Math.sin(t) * radius * 0.82;
+
+  const p = rotatePoint(x, y, -0.04);
+
+  return targetResponse({
+    x: cx + p.x,
+    y: cy + p.y + laneOffset * unit * scale * 0.01,
+    pull: lane === "primary" ? 0.052 : lane === "secondary" ? 0.024 : 0.011,
+    orbit: 0.0022,
+    drag: 0.999,
+    path: "flower",
+    lock: lane === "primary" ? 1.55 : 0.82
   });
 }
 
