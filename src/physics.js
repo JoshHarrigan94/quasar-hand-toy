@@ -1,4 +1,4 @@
-import { state } from "./state.js";
+import { state, nudgeMind } from "./state.js";
 import { CONFIG } from "./config.js";
 import { respawnParticleNearCore } from "./particles.js";
 import {
@@ -99,6 +99,76 @@ function getGravityModePhysics() {
     wave: 1,
     drag: 1
   };
+}
+
+function updateArtifactMind() {
+  if (!state.mind) return;
+
+  const now = Date.now();
+  const timeSinceInteraction = now - state.presence.lastInteractionAt;
+
+  if (timeSinceInteraction > 3000) {
+    nudgeMind({
+      loneliness: 0.0009,
+      curiosity: 0.00045,
+      attention: -0.0006
+    });
+  }
+
+  if (state.presence.stillness > 0.5) {
+    nudgeMind({
+      calmness: 0.0012,
+      trust: 0.0008,
+      disturbanceMemory: -0.0008,
+      loneliness: -0.0005
+    });
+  }
+
+  if (state.artifact.disturbance > 0.35) {
+    nudgeMind({
+      disturbanceMemory: 0.0014,
+      calmness: -0.001,
+      trust: -0.0004,
+      curiosity: 0.0006
+    });
+  }
+
+  if (state.pointer.active) {
+    nudgeMind({
+      attention: 0.0018,
+      curiosity: 0.0009,
+      loneliness: -0.001
+    });
+  }
+}
+
+function maybeAutonomousPulse() {
+  if (!state.mind) return;
+
+  const now = Date.now();
+  const mind = state.mind;
+
+  if (now - mind.lastMoodShiftAt < 4500) return;
+
+  if (mind.mood === "curious" && Math.random() < 0.006) {
+    pulseAt(state.width / 2, state.height / 2, 0.28);
+    mind.lastMoodShiftAt = now;
+  }
+
+  if (mind.mood === "settled" && Math.random() < 0.004) {
+    state.presence.presencePulse = Math.max(state.presence.presencePulse, 0.45);
+    mind.lastMoodShiftAt = now;
+  }
+
+  if (mind.mood === "wary" && Math.random() < 0.005) {
+    gravityWaveAt(state.width / 2, state.height / 2, 0.18);
+    mind.lastMoodShiftAt = now;
+  }
+
+  if (mind.mood === "distant" && Math.random() < 0.003) {
+    state.artifact.openness = Math.min(1, state.artifact.openness + 0.08);
+    mind.lastMoodShiftAt = now;
+  }
 }
 
 function getRolePhysics(particle) {
