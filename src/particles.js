@@ -212,4 +212,4 @@ export function respawnParticleNearCore(particle) {
 
   particle.vx *= -0.05;
   particle.vy *= -0.05;
-}
+} 
