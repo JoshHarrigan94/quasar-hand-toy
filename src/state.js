@@ -117,6 +117,7 @@ mind: {
     resetBtn: null,
     cameraFeed: null,
     gravityBtn: null
+    memoryText: null,
   },
 
   mediaPipe: {
