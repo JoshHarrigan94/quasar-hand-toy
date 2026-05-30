@@ -66,7 +66,7 @@ canvas {
   color: rgba(255,255,255,.42);
 
   border-radius: 999px;
-  padding: 9px 13px;
+  padding: 10px 14px;
 
   font-size: 11px;
   letter-spacing: .12em;
@@ -109,8 +109,8 @@ canvas {
 
 .hud.collapsed {
   opacity: 0;
-  transform: translateY(-8px);
-  pointer-events: none;
+transform: translateY(16px);
+pointer-events: none;
 }
 
 .observatory-card {
@@ -200,8 +200,8 @@ canvas {
 
 button {
   border: 1px solid rgba(255,255,255,.045);
-  background: rgba(255,255,255,.02);
-  color: rgba(255,255,255,.56);
+  background: rgba(255,255,255,.018);
+color: rgba(255,255,255,.5);
   border-radius: 999px;
   padding: 8px 11px;
   font-size: 11px;
@@ -218,9 +218,9 @@ button:active {
 }
 
 button.active {
-  background: rgba(255,255,255,.05);
-  border-color: rgba(255,255,255,.12);
-  color: rgba(255,255,255,.82);
+  background: rgba(255,255,255,.065);
+border-color: rgba(255,255,255,.16);
+color: rgba(255,255,255,.86);
 }
 
 #cameraBtn.active {
@@ -412,10 +412,10 @@ button.active {
   }
 
   .ui-toggle {
-    opacity: .72;
+    opacity: .78;
   }
 
   .hint {
-    opacity: .28;
+    opacity: .24;
   }
 }
