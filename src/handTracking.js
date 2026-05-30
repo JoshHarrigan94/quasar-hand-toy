@@ -111,3 +111,79 @@ export async function startCamera() {
     }
   }
 }
+
+export async function stopCamera() {
+  state.cameraActive = false;
+  state.pointer.source = "touch";
+  state.pointer.active = false;
+  state.pointer.down = false;
+
+  if (state.mediaPipe?.camera) {
+    try {
+      await state.mediaPipe.camera.stop();
+    } catch (error) {
+      console.warn("Camera stop warning:", error);
+    }
+
+    state.mediaPipe.camera = null;
+  }
+
+  if (state.ui.cameraFeed?.srcObject) {
+    const tracks = state.ui.cameraFeed.srcObject.getTracks();
+    tracks.forEach((track) => track.stop());
+    state.ui.cameraFeed.srcObject = null;
+  }
+
+  if (state.ui.cameraFeed) {
+    state.ui.cameraFeed.classList.remove("active");
+  }
+
+  if (state.ui.handStatus) {
+    state.ui.handStatus.textContent = "Hand tracking off";
+    state.ui.handStatus.classList.remove("active");
+  }
+
+  if (state.ui.cameraBtn) {
+    state.ui.cameraBtn.textContent = "Start Camera";
+    state.ui.cameraBtn.classList.remove("active");
+  }
+}
+
+export async function stopCamera() {
+  state.cameraActive = false;
+  state.pointer.source = "touch";
+  state.pointer.active = false;
+  state.pointer.down = false;
+
+  if (state.mediaPipe?.camera) {
+    try {
+      await state.mediaPipe.camera.stop();
+    } catch (error) {
+      console.warn("Camera stop warning:", error);
+    }
+
+    state.mediaPipe.camera = null;
+  }
+
+  if (state.ui.cameraFeed?.srcObject) {
+    const tracks = state.ui.cameraFeed.srcObject.getTracks();
+    tracks.forEach((track) => track.stop());
+    state.ui.cameraFeed.srcObject = null;
+  }
+
+  if (state.ui.cameraFeed) {
+    state.ui.cameraFeed.classList.remove("active");
+  }
+
+  if (state.ui.handStatus) {
+    state.ui.handStatus.textContent = "Hand tracking off";
+    state.ui.handStatus.classList.remove("active");
+  }
+
+  if (state.ui.cameraBtn) {
+    state.ui.cameraBtn.textContent = "Start Camera";
+    state.ui.cameraBtn.classList.remove("active");
+  }
+}
+
+window.stopInfinityCamera = stopCamera;
