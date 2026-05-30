@@ -101,6 +101,52 @@ function getGravityModePhysics() {
   };
 }
 
+function getMemoryPhysics() {
+  const memory = state.memory || {};
+
+  const bond = memory.bond || 0;
+  const age = memory.age || 0;
+  const temperament = memory.temperament || "unknown";
+
+  let pull = 1 + bond * 0.18;
+  let orbit = 1 + age * 0.12;
+  let pointer = 1 + bond * 0.2;
+  let wave = 1;
+  let drag = 1;
+
+  if (temperament === "wary") {
+    pull *= 0.92;
+    orbit *= 1.18;
+    pointer *= 0.9;
+    wave *= 1.18;
+  }
+
+  if (temperament === "settled") {
+    pull *= 1.08;
+    orbit *= 0.92;
+    pointer *= 0.96;
+    drag *= 0.998;
+  }
+
+  if (temperament === "restless") {
+    orbit *= 1.22;
+    pointer *= 1.08;
+  }
+
+  if (temperament === "inward") {
+    pull *= 1.16;
+    orbit *= 0.9;
+  }
+
+  if (temperament === "expansive") {
+    pull *= 0.9;
+    pointer *= 1.14;
+    wave *= 1.12;
+  }
+
+  return { pull, orbit, pointer, wave, drag };
+}
+
 function updateArtifactMind() {
   if (!state.mind) return;
 
@@ -361,6 +407,7 @@ if (state.memory) {
 }
     const scenePhysics = getScenePhysics();
   const gravityPhysics = getGravityModePhysics();
+  const memoryPhysics = getMemoryPhysics();
 
   state.shockwaves.push({
     x,
@@ -397,8 +444,9 @@ if (state.memory) {
     const waveForce =
       strength *
       gravityPhysics.wave *
-      scenePhysics.disturbance *
-      rolePhysics.pointer;
+memoryPhysics.wave *
+scenePhysics.disturbance *
+rolePhysics.pointer;
 
     particle.vx += nx * influence * waveForce * 0.9 * particle.depth;
     particle.vy += ny * influence * waveForce * 0.9 * particle.depth;
@@ -572,6 +620,7 @@ function applyInfinityCorePhysics(particle, index) {
 
   const scenePhysics = getScenePhysics();
   const gravityPhysics = getGravityModePhysics();
+  const memoryPhysics = getMemoryPhysics();
   const rolePhysics = getRolePhysics(particle);
   const shapeAuthority = getShapeAuthority(particle);
 
@@ -603,7 +652,8 @@ function applyInfinityCorePhysics(particle, index) {
     stillnessReveal *
     scenePhysics.pull *
     gravityPhysics.pull *
-    rolePhysics.pull *
+memoryPhysics.pull *
+rolePhysics.pull *
     shapeAuthority *
     elasticLock;
 
@@ -617,7 +667,8 @@ function applyInfinityCorePhysics(particle, index) {
     pathVariance *
     scenePhysics.orbit *
     gravityPhysics.orbit *
-    rolePhysics.orbit;
+memoryPhysics.orbit *
+rolePhysics.orbit;
 
   particle.vx += tx * orbit;
   particle.vy += ty * orbit;
@@ -696,6 +747,7 @@ function applyPointerPhysics(particle) {
 
   const scenePhysics = getScenePhysics();
   const gravityPhysics = getGravityModePhysics();
+  const memoryPhysics = getMemoryPhysics();
   const rolePhysics = getRolePhysics(particle);
 
   const pdx = pointer.x - particle.x;
@@ -719,7 +771,8 @@ function applyPointerPhysics(particle) {
     energyScale *
     scenePhysics.pointer *
     gravityPhysics.pointer *
-    rolePhysics.pointer;
+memoryPhysics.pointer *
+rolePhysics.pointer;
 
   const px = pdx / pdist;
   const py = pdy / pdist;
@@ -785,6 +838,8 @@ function applyPointerPhysics(particle) {
 
 export function updateParticlePhysics(particle, index) {
   const gravityPhysics = getGravityModePhysics();
+  const memoryPhysics = getMemoryPhysics();
+
 
   applyCoreGalaxyPhysics(particle);
   applyInfinityCorePhysics(particle, index);
@@ -801,8 +856,8 @@ export function updateParticlePhysics(particle, index) {
     state.artifact.awakeLevel * 0.007 +
     state.presence.stillness * 0.004;
 
-  particle.vx *= CONFIG.physics.drag * gravityPhysics.drag;
-  particle.vy *= CONFIG.physics.drag * gravityPhysics.drag;
+  particle.vx *= CONFIG.physics.drag * gravityPhysics.drag * memoryPhysics.drag;
+particle.vy *= CONFIG.physics.drag * gravityPhysics.drag * memoryPhysics.drag;
 
   applyAntiStallDrift(particle, index);
 
