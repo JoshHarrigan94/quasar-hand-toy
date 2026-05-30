@@ -32,6 +32,19 @@ export const state = {
     stateLabel: "Dormant"
   },
 
+mind: {
+  curiosity: 0.18,
+  trust: 0.12,
+  calmness: 0.35,
+  disturbanceMemory: 0,
+  attraction: 0.2,
+  loneliness: 0,
+  familiarity: 0,
+  attention: 0,
+  lastMoodShiftAt: Date.now(),
+  mood: "distant"
+},
+
   presence: {
     breath: 0,
     breathPhase: 0,
@@ -99,4 +112,52 @@ export function setScene(sceneName) {
   state.scene.current = sceneName;
   state.scene.transition = 1;
   state.scene.lastChangeAt = Date.now();
+}
+
+export function nudgeMind({
+  curiosity = 0,
+  trust = 0,
+  calmness = 0,
+  disturbanceMemory = 0,
+  attraction = 0,
+  loneliness = 0,
+  familiarity = 0,
+  attention = 0
+} = {}) {
+  const mind = state.mind;
+
+  mind.curiosity = clamp01(mind.curiosity + curiosity);
+  mind.trust = clamp01(mind.trust + trust);
+  mind.calmness = clamp01(mind.calmness + calmness);
+  mind.disturbanceMemory = clamp01(mind.disturbanceMemory + disturbanceMemory);
+  mind.attraction = clamp01(mind.attraction + attraction);
+  mind.loneliness = clamp01(mind.loneliness + loneliness);
+  mind.familiarity = clamp01(mind.familiarity + familiarity);
+  mind.attention = clamp01(mind.attention + attention);
+
+  updateMindMood();
+}
+
+function updateMindMood() {
+  const mind = state.mind;
+
+  if (mind.disturbanceMemory > 0.72) {
+    mind.mood = "wary";
+  } else if (mind.trust > 0.68 && mind.calmness > 0.55) {
+    mind.mood = "settled";
+  } else if (mind.curiosity > 0.62) {
+    mind.mood = "curious";
+  } else if (mind.loneliness > 0.62) {
+    mind.mood = "distant";
+  } else if (mind.attention > 0.5) {
+    mind.mood = "listening";
+  } else {
+    mind.mood = "dormant";
+  }
+
+  mind.lastMoodShiftAt = Date.now();
+}
+
+function clamp01(value) {
+  return Math.max(0, Math.min(1, value));
 }
