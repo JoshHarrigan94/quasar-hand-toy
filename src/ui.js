@@ -28,6 +28,7 @@ export function updateArtifactStatus() {
   const label = state.artifact?.stateLabel || "Dormant";
   const sceneCopy = {
   dormant: "Dormant Core",
+  saturn: "Saturn Ring",
   reveal: "Revealing Geometry",
   disturbed: "Disturbed Field"
 };
@@ -236,7 +237,7 @@ export function initialiseUiText() {
 }
 
 export function cycleScene() {
-  const order = ["dormant", "reveal", "disturbed"];
+  const order = ["dormant", "saturn", "reveal", "disturbed"];
   const currentIndex = order.indexOf(state.scene.current);
   const nextScene = order[(currentIndex + 1) % order.length];
 
@@ -244,6 +245,7 @@ export function cycleScene() {
 
   const labels = {
     dormant: "Dormant Core",
+    saturn: "Saturn Ring",
     reveal: "Revealing Geometry",
     disturbed: "Disturbed Field"
   };
