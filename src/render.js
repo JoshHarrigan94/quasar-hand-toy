@@ -323,6 +323,10 @@ export function drawParticle(particle) {
   const visuals = getLayerVisuals(particle);
   const pathVisuals = getPathVisuals(particle);
   const sceneVisuals = getSceneVisuals();
+  const transition = state.scene?.transition ?? 1;
+
+const transitionGlow =
+  1 - Math.abs(transition - 0.5) * 2;
   const laneVisuals = getLaneVisuals(particle);
   const geometryVisuals = getGeometryVisuals(particle);
 
