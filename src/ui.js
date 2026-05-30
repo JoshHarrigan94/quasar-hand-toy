@@ -32,7 +32,12 @@ export function updateArtifactStatus() {
   cube: "Cube Well",
   wave: "Wave Complex",
   reveal: "Revealing Geometry",
-  disturbed: "Disturbed Field"
+  disturbed: "Disturbed Field",
+  helix: "Double Helix",
+  galaxy: "Spiral Galaxy",
+  orbital: "Orbital System",
+  eye: "Eye Engine",
+  flower: "Flower Rail"
 };
 
 const sceneLabel = sceneCopy[state.scene?.current] || "Dormant Core";
@@ -246,7 +251,19 @@ function clearPointerInfluence() {
 }
 
 export function cycleScene() {
-  const order = ["dormant", "saturn", "cube", "wave", "reveal", "disturbed"];
+  const order = [
+  "dormant",
+  "saturn",
+  "cube",
+  "wave",
+  "reveal",
+  "disturbed",
+  "helix",
+  "galaxy",
+  "orbital",
+  "eye",
+  "flower"
+];
   const currentIndex = order.indexOf(state.scene.current);
   const nextScene = order[(currentIndex + 1) % order.length];
 
@@ -259,13 +276,18 @@ export function cycleScene() {
   state.presence.revealing = true;
 
   const labels = {
-    dormant: "Dormant Core",
-    saturn: "Saturn Ring",
-    cube: "Cube Well",
-    wave: "Wave Complex",
-    reveal: "Revealing Geometry",
-    disturbed: "Disturbed Field"
-  };
+  dormant: "Dormant Core",
+  saturn: "Saturn Ring",
+  cube: "Cube Well",
+  wave: "Wave Complex",
+  reveal: "Revealing Geometry",
+  disturbed: "Disturbed Field",
+  helix: "Double Helix",
+  galaxy: "Spiral Galaxy",
+  orbital: "Orbital System",
+  eye: "Eye Engine",
+  flower: "Flower Rail"
+};
 
   setGesture(labels[nextScene] || "Scene shifted");
   updateArtifactStatus();
