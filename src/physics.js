@@ -298,6 +298,26 @@ export function markInteraction() {
   }
 }
 
+function applyDeformationRecovery(particle) {
+  if (!particle.deformation) return;
+
+  particle.deformation.x *= 0.94;
+  particle.deformation.y *= 0.94;
+  particle.deformation.strength *= 0.965;
+
+  if (Math.abs(particle.deformation.x) < 0.001) {
+    particle.deformation.x = 0;
+  }
+
+  if (Math.abs(particle.deformation.y) < 0.001) {
+    particle.deformation.y = 0;
+  }
+
+  if (particle.deformation.strength < 0.001) {
+    particle.deformation.strength = 0;
+  }
+}
+
 export function updatePresenceState() {
   const now = Date.now();
   const scenePhysics = getScenePhysics();
@@ -624,8 +644,11 @@ function applyInfinityCorePhysics(particle, index) {
   const rolePhysics = getRolePhysics(particle);
   const shapeAuthority = getShapeAuthority(particle);
 
-  const dx = target.x - particle.x;
-  const dy = target.y - particle.y;
+  const deformationX = particle.deformation?.x || 0;
+const deformationY = particle.deformation?.y || 0;
+
+const dx = target.x + deformationX - particle.x;
+const dy = target.y + deformationY - particle.y;
 
   const dist = Math.hypot(dx, dy) || 1;
 
@@ -878,6 +901,7 @@ export function updateParticlePhysics(particle, index) {
   }
 
   applyPointerPhysics(particle);
+  applyDeformationRecovery(particle);
 
   particle.pulse +=
     0.012 +
