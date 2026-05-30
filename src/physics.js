@@ -7,6 +7,38 @@ import {
 } from "./cosmicStructures.js";
 import { getInfinityCoreTarget } from "./infinityCore.js";
 
+function getGravityModePhysics() {
+  const mode = state.gravityMode || "calm";
+
+  if (mode === "fragile") {
+    return {
+      pull: 0.72,
+      orbit: 1.08,
+      pointer: 1.22,
+      wave: 1.18,
+      drag: 0.998
+    };
+  }
+
+  if (mode === "dense") {
+    return {
+      pull: 1.34,
+      orbit: 0.72,
+      pointer: 0.72,
+      wave: 0.68,
+      drag: 0.992
+    };
+  }
+
+  return {
+    pull: 1,
+    orbit: 1,
+    pointer: 1,
+    wave: 1,
+    drag: 1
+  };
+}
+
 function getScenePhysics() {
   const scene = state.scene?.current || "dormant";
 
