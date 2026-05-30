@@ -30,6 +30,7 @@ export function updateArtifactStatus() {
   dormant: "Dormant Core",
   saturn: "Saturn Ring",
   cube: "Cube Well",
+  wave: "Wave Complex",
   reveal: "Revealing Geometry",
   disturbed: "Disturbed Field"
 };
@@ -238,18 +239,20 @@ export function initialiseUiText() {
 }
 
 export function cycleScene() {
-  const order = ["dormant", "saturn", "cube", "reveal", "disturbed"];
+  const order = ["dormant", "saturn", "cube", "wave", "reveal", "disturbed"];
   const currentIndex = order.indexOf(state.scene.current);
   const nextScene = order[(currentIndex + 1) % order.length];
 
   setScene(nextScene);
 
   const labels = {
-    dormant: "Dormant Core",
-    saturn: "Saturn Ring",
-    reveal: "Revealing Geometry",
-    disturbed: "Disturbed Field"
-  };
+  dormant: "Dormant Core",
+  saturn: "Saturn Ring",
+  cube: "Cube Well",
+  wave: "Wave Complex",
+  reveal: "Revealing Geometry",
+  disturbed: "Disturbed Field"
+};
 
   setGesture(labels[nextScene] || "Scene shifted");
   updateArtifactStatus();
