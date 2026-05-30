@@ -83,6 +83,7 @@ export function updatePresenceState() {
 
   if (timeSinceInteraction > 1600 && !state.pointer.down) {
   const scenePhysics = getScenePhysics();
+  const gravityPhysics = getGravityModePhysics();
 
 state.presence.stillness = Math.min(
   1,
@@ -412,6 +413,7 @@ function applyInfinityCorePhysics(particle, index) {
   pressureBoost *
   pathVariance *
   stillnessReveal *
+  gravityPhysics.pull *
   scenePhysics.pull;
 
   particle.vx += nx * pull;
@@ -597,8 +599,10 @@ export function updateParticlePhysics(particle, index) {
     state.artifact.awakeLevel * 0.007 +
     state.presence.stillness * 0.004;
 
-  particle.vx *= CONFIG.physics.drag;
-  particle.vy *= CONFIG.physics.drag;
+  const gravityPhysics = getGravityModePhysics();
+
+particle.vx *= CONFIG.physics.drag * gravityPhysics.drag;
+particle.vy *= CONFIG.physics.drag * gravityPhysics.drag;
 
   particle.x += particle.vx;
   particle.y += particle.vy;
