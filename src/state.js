@@ -18,6 +18,12 @@ export const state = {
   shockwaves: [],
   comets: [],
 
+scene: {
+  current: "dormant",
+  transition: 0,
+  lastChangeAt: Date.now()
+},
+
   artifact: {
     awakeLevel: 0,
     disturbance: 0,
