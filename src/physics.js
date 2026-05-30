@@ -246,6 +246,10 @@ export function markInteraction() {
   state.presence.lastInteractionAt = Date.now();
   state.presence.stillness = 0;
   state.presence.revealing = false;
+
+  if (state.memory) {
+    state.memory.totalTouches += 1;
+  }
 }
 
 export function updatePresenceState() {
@@ -352,7 +356,10 @@ export function pulseAt(x, y, strength = 1) {
 }
 
 export function gravityWaveAt(x, y, strength = 1) {
-  const scenePhysics = getScenePhysics();
+if (state.memory) {
+  state.memory.totalGravityWaves += 1;
+}
+    const scenePhysics = getScenePhysics();
   const gravityPhysics = getGravityModePhysics();
 
   state.shockwaves.push({
