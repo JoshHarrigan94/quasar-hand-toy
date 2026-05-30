@@ -7,6 +7,27 @@ import {
 } from "./cosmicStructures.js";
 import { getInfinityCoreTarget } from "./infinityCore.js";
 
+function applyAntiStallDrift(particle, index) {
+  const speed = Math.hypot(particle.vx, particle.vy);
+
+  if (speed > 0.035) return;
+
+  const phase =
+    state.hue * 0.002 +
+    index * 0.618 +
+    particle.pathBias * Math.PI * 2;
+
+  const drift =
+    particle.role === "veil"
+      ? 0.006
+      : particle.role === "structure"
+        ? 0.012
+        : 0.009;
+
+  particle.vx += Math.cos(phase) * drift;
+  particle.vy += Math.sin(phase) * drift * 0.6;
+}
+
 function getScenePhysics() {
   const scene = state.scene?.current || "dormant";
 
