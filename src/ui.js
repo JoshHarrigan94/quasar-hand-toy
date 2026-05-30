@@ -29,11 +29,14 @@ export function updateArtifactStatus() {
 
   const copy = {
     Dormant: "Dormant. Suspended in the void.",
-    Listening: "Listening. The field has noticed you.",
+    Listening: "Listening. It has noticed movement nearby.",
+    Breathing: "Breathing. The field is settling into order.",
+    Revealing: "Revealing. Hidden paths are becoming visible.",
     Awake: "Awake. The core is responding.",
     Compressed: "Compressed. Matter is folding inward.",
     Expanded: "Expanded. The halo is opening.",
-    Unstable: "Unstable. Gravity waves are moving through it."
+    Disturbed: "Disturbed. Gravity waves are moving through it.",
+    Unstable: "Unstable. The field is losing coherence."
   };
 
   if (state.ui.statusText) {
@@ -82,7 +85,18 @@ export function resetField() {
     state.artifact.pressure = 0;
     state.artifact.openness = 0;
     state.artifact.pulse = 0;
+    state.artifact.lastInteractionAt = 0;
     state.artifact.stateLabel = "Dormant";
+  }
+
+  if (state.presence) {
+    state.presence.breath = 0;
+    state.presence.breathPhase = 0;
+    state.presence.stillness = 0;
+    state.presence.presencePulse = 0;
+    state.presence.lastPresenceEventAt = 0;
+    state.presence.lastInteractionAt = Date.now();
+    state.presence.revealing = false;
   }
 
   pulseAt(state.width / 2, state.height / 2, 1.2);
@@ -115,9 +129,9 @@ export function collapseInterface() {
   if (!shell || !toggle) return;
 
   shell.classList.add("collapsed");
-state.interface.collapsed = true;
-toggle.textContent = "Open";
-toggle.setAttribute("aria-expanded", "false");
+  state.interface.collapsed = true;
+  toggle.textContent = "Open";
+  toggle.setAttribute("aria-expanded", "false");
 }
 
 export function openInterface() {
@@ -127,9 +141,9 @@ export function openInterface() {
   if (!shell || !toggle) return;
 
   shell.classList.remove("collapsed");
-state.interface.collapsed = false;
-toggle.textContent = "Observatory";
-toggle.setAttribute("aria-expanded", "true");
+  state.interface.collapsed = false;
+  toggle.textContent = "Observatory";
+  toggle.setAttribute("aria-expanded", "true");
 
   scheduleAutoCollapse();
 }
@@ -150,8 +164,8 @@ export function scheduleAutoCollapse() {
   clearTimeout(autoCollapseTimer);
 
   autoCollapseTimer = setTimeout(() => {
-  collapseInterface();
-}, state.interface.autoCollapseMs);
+    collapseInterface();
+  }, state.interface.autoCollapseMs);
 }
 
 export function noteUiInteraction() {
