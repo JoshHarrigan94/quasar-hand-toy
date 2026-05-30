@@ -7,6 +7,35 @@ import {
 } from "./cosmicStructures.js";
 import { getInfinityCoreTarget } from "./infinityCore.js";
 
+function getScenePhysics() {
+  const scene = state.scene?.current || "dormant";
+
+  if (scene === "reveal") {
+    return {
+      pull: 1.12,
+      orbit: 1.08,
+      stillnessGain: 1.45,
+      disturbance: 0.82
+    };
+  }
+
+  if (scene === "disturbed") {
+    return {
+      pull: 0.92,
+      orbit: 1.22,
+      stillnessGain: 0.72,
+      disturbance: 1.35
+    };
+  }
+
+  return {
+    pull: 1,
+    orbit: 0.92,
+    stillnessGain: 1,
+    disturbance: 0.72
+  };
+}
+
 export function markInteraction() {
   state.presence.lastInteractionAt = Date.now();
   state.presence.stillness = 0;
@@ -21,7 +50,12 @@ export function updatePresenceState() {
   state.presence.breath = (Math.sin(state.presence.breathPhase) + 1) / 2;
 
   if (timeSinceInteraction > 1600 && !state.pointer.down) {
-  state.presence.stillness = Math.min(1, state.presence.stillness + 0.0042);
+  const scenePhysics = getScenePhysics();
+
+state.presence.stillness = Math.min(
+  1,
+  state.presence.stillness + 0.0042 * scenePhysics.stillnessGain
+);
   } else {
     state.presence.stillness *= 0.985;
   }
@@ -337,19 +371,35 @@ function applyInfinityCorePhysics(particle, index) {
 
   const pathVariance = 0.82 + particle.pathBias * 0.28;
 
+  const scenePhysics = getScenePhysics();
+
   const pull =
-    target.pull *
-    particle.layerPull *
-    particle.depth *
-    pressureBoost *
-    pathVariance *
-    stillnessReveal;
+  target.pull *
+  particle.layerPull *
+  particle.depth *
+  pressureBoost *
+  pathVariance *
+  stillnessReveal *
+  scenePhysics.pull;
 
   particle.vx += nx * pull;
   particle.vy += ny * pull;
 
-  particle.vx += tx * target.orbit * particle.depth * opennessBoost * pathVariance;
-  particle.vy += ty * target.orbit * particle.depth * opennessBoost * pathVariance;
+  particle.vx +=
+  tx *
+  target.orbit *
+  particle.depth *
+  opennessBoost *
+  pathVariance *
+  scenePhysics.orbit;
+
+particle.vy +=
+  ty *
+  target.orbit *
+  particle.depth *
+  opennessBoost *
+  pathVariance *
+  scenePhysics.orbit;
 
   particle.vx *= target.drag;
   particle.vy *= target.drag;
