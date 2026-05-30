@@ -116,7 +116,7 @@ mind: {
     pauseBtn: null,
     resetBtn: null,
     cameraFeed: null,
-    gravityBtn: null
+    gravityBtn: null,
     memoryText: null
   },
 
