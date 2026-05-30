@@ -158,7 +158,7 @@ function getCoreWell(particle, index) {
     orbit: 0.004,
     drag: 0.9982,
     path: "well",
-    lock: lane === "core" ? 2.2 : 1
+    lock: lane === "core" ? 1.5 : 0.9
   });
 }
 
@@ -230,7 +230,7 @@ function getSaturnRail(particle, index) {
     orbit: 0.0025,
     drag: 0.999,
     path: "saturn",
-    lock: lane === "primary" ? 3.4 : 1.5
+    lock: lane === "primary" ? 1.6 : 0.9
   });
 }
 
@@ -295,7 +295,7 @@ function getCubeRail(particle, index) {
     orbit: 0.0012,
     drag: 0.999,
     path: "cube",
-    lock: lane === "primary" ? 3.8 : 1.6
+    lock: lane === "primary" ? 1.7 : 0.95
   });
 }
 
@@ -341,7 +341,7 @@ function getWaveRail(particle, index) {
     orbit: 0.0018,
     drag: 0.999,
     path: "wave",
-    lock: lane === "primary" ? 3.2 : 1.4
+    lock: lane === "primary" ? 1.55 : 0.85
   });
 }
 
@@ -376,7 +376,7 @@ function getInfinityRail(particle, index) {
     orbit: 0.0022,
     drag: 0.999,
     path: "infinity",
-    lock: lane === "primary" ? 3.5 : 1.5
+    lock: lane === "primary" ? 1.6 : 0.9
   });
 }
 
