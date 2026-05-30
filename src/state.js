@@ -85,7 +85,8 @@ export const state = {
     cameraBtn: null,
     pauseBtn: null,
     resetBtn: null,
-    cameraFeed: null
+    cameraFeed: null,
+    gravityBtn: null
   },
 
   mediaPipe: {
