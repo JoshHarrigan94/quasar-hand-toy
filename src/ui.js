@@ -268,6 +268,16 @@ export function cycleScene() {
   const nextScene = order[(currentIndex + 1) % order.length];
 
   setScene(nextScene);
+  if (
+  state.memory &&
+  !state.memory.discoveredShapes.includes(nextScene)
+) {
+  state.memory.discoveredShapes.push(nextScene);
+}
+
+if (state.memory) {
+  state.memory.favouriteShape = nextScene;
+}
   clearPointerInfluence();
 
   state.artifact.pulse = 0;
