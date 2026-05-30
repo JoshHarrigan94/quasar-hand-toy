@@ -49,6 +49,9 @@ export function getInfinityCoreTarget(particle, index = 0) {
   if (state.scene?.current === "cube") {
   return getCubeTarget(particle, index);
 }
+if (state.scene?.current === "wave") {
+  return getWaveTarget(particle, index);
+}
   const path = particle.gravityPath || GRAVITY_PATHS.WELL;
   
   if (path === GRAVITY_PATHS.WELL) return getWellTarget(particle, index);
@@ -331,6 +334,59 @@ function getSaturnTarget(particle, index) {
     orbit: 0.0052,
     drag: 0.9975,
     path: "saturn"
+  };
+}
+
+function getWaveTarget(particle, index) {
+  const { cx, cy, unit, pathBand, phase, scale, layerScale } =
+    getBaseValues(particle, index);
+
+  const width =
+    unit *
+    scale *
+    layerScale *
+    (0.24 + pathBand * 0.34);
+
+  const amplitude =
+    unit *
+    scale *
+    layerScale *
+    (0.035 + pathBand * 0.08);
+
+  const t =
+    (Math.sin(phase * 0.16 + particle.pathBias * Math.PI * 2) + 1) /
+    2;
+
+  const rawX = -width / 2 + width * t;
+
+  const sinWave =
+    Math.sin(t * Math.PI * 2 + phase * 0.12) *
+    amplitude;
+
+  const cosWave =
+    Math.cos(t * Math.PI * 4 + phase * 0.06) *
+    amplitude *
+    0.38;
+
+  const parabola =
+    ((t - 0.5) * (t - 0.5) - 0.12) *
+    amplitude *
+    2.1;
+
+  const rawY =
+    sinWave +
+    cosWave +
+    parabola;
+
+  const tilt = -0.08;
+
+  return {
+    x: cx + rawX * Math.cos(tilt) - rawY * Math.sin(tilt),
+    y: cy + rawX * Math.sin(tilt) + rawY * Math.cos(tilt),
+    pull: 0.0054,
+    orbit: 0.0034,
+    drag: 0.998,
+    path: "wave"
   };
 }
 
