@@ -387,8 +387,10 @@ geometryVisuals.alpha *
   particle.size *
     particle.depth *
     visuals.size *
-    pathVisuals.size *
-    sizeBoost *
+pathVisuals.size *
+laneVisuals.size *
+geometryVisuals.size *
+sizeBoost *
     0.88 *
     sceneVisuals.size *
     (1 + transitionGlow * 0.08) *
