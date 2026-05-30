@@ -167,7 +167,7 @@ function getLayerVisuals(particle) {
     return {
       hueShift: 0,
       saturation: 5 + awake * 3,
-      lightness: 84 + awake * 3 + stillness * 2,
+      lightness: 80 + awake * 3 + stillness * 2,
       alphaBase: (0.064 + awake * 0.018 + presencePulse * 0.018) * phoneAlpha,
       alphaDepth: (0.235 + awake * 0.038 + stillness * 0.032) * phoneAlpha,
       alphaGlow: (0.16 + disturbance * 0.03 + breath * 0.012) * phoneAlpha,
@@ -181,7 +181,7 @@ function getLayerVisuals(particle) {
     return {
       hueShift: -3,
       saturation: 5 + awake * 2,
-      lightness: 80 + awake * 2 + stillness * 2,
+      lightness: 77 + awake * 2 + stillness * 2,
       alphaBase: (0.054 + awake * 0.014 + presencePulse * 0.012) * phoneAlpha,
       alphaDepth: (0.21 + awake * 0.03 + stillness * 0.026) * phoneAlpha,
       alphaGlow: (0.145 + disturbance * 0.024 + breath * 0.008) * phoneAlpha,
@@ -195,7 +195,7 @@ function getLayerVisuals(particle) {
     return {
       hueShift: -7,
       saturation: 4 + awake * 1.5,
-      lightness: 74 + awake * 2 + stillness * 1.5,
+      lightness: 72 + awake * 2 + stillness * 1.5,
       alphaBase: (0.044 + awake * 0.01 + presencePulse * 0.008) * phoneAlpha,
       alphaDepth: (0.18 + awake * 0.02 + stillness * 0.016) * phoneAlpha,
       alphaGlow: (0.12 + disturbance * 0.018 + breath * 0.005) * phoneAlpha,
@@ -208,7 +208,7 @@ function getLayerVisuals(particle) {
   return {
     hueShift: -12,
     saturation: 3,
-    lightness: 66 + awake * 1.5 + stillness * 1.5,
+    lightness: 58 + awake + stillness,
     alphaBase: (0.022 + awake * 0.004 + presencePulse * 0.004) * phoneAlpha,
     alphaDepth: (0.095 + awake * 0.012 + stillness * 0.01) * phoneAlpha,
     alphaGlow: (0.052 + disturbance * 0.01) * phoneAlpha,
@@ -265,11 +265,12 @@ export function drawParticle(particle) {
     particle.x,
     particle.y,
     particle.size *
-      particle.depth *
-      visuals.size *
-      pathVisuals.size *
-      sizeBoost *
-      (particle.spark ? 1.35 : 1),
+  particle.depth *
+  visuals.size *
+  pathVisuals.size *
+  sizeBoost *
+  0.88 *
+      (particle.spark ? 1.15 : 1)
     0,
     Math.PI * 2
   );
