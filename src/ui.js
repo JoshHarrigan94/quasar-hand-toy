@@ -270,24 +270,23 @@ export function updateCameraButton() {
 
 export function cycleGravityMode() {
   const order = ["fragile", "calm", "dense"];
-  const currentIndex = order.indexOf(state.gravityMode || "calm");
+  const current = state.gravityMode || "calm";
+  const currentIndex = order.indexOf(current);
   const nextMode = order[(currentIndex + 1) % order.length];
 
   state.gravityMode = nextMode;
 
   const labels = {
-  dormant: "Dormant Core",
-  saturn: "Saturn Ring",
-  cube: "Cube Well",
-  reveal: "Revealing Geometry",
-  disturbed: "Disturbed Field"
-};
+    fragile: "Gravity: Fragile",
+    calm: "Gravity: Calm",
+    dense: "Gravity: Dense"
+  };
 
   if (state.ui.gravityBtn) {
-    state.ui.gravityBtn.textContent = labels[nextMode];
+    state.ui.gravityBtn.textContent = labels[nextMode] || "Gravity: Calm";
   }
 
-  setGesture(labels[nextMode]);
+  setGesture(labels[nextMode] || "Gravity shifted");
   noteUiInteraction();
 }
 
