@@ -175,8 +175,15 @@ export function createParticles() {
 
       gravityPath,
       pathPhase: Math.random() * Math.PI * 2,
-      pathBand: Math.random(),
-      pathBias: Math.random()
+pathBand: Math.random(),
+pathBias: Math.random(),
+
+deformation: {
+  x: 0,
+  y: 0,
+  strength: 0,
+  lastDisturbedAt: 0
+}
     });
   }
 }
