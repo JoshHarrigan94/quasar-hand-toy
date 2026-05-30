@@ -527,7 +527,7 @@ function applyPointerPhysics(particle) {
 
     const rotateForce =
   force *
-  0.92 *
+  0.46 *
   (0.5 + influence * 0.5);
 
     particle.vx += -py * rotateForce;
