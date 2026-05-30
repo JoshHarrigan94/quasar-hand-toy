@@ -85,31 +85,31 @@ scene: {
   },
 
   ui: {
-    statusText: null,
-    gestureText: null,
+  statusText: null,
+  gestureText: null,
 
-    energyText: null,
-    energyFill: null,
+  energyText: null,
+  energyFill: null,
 
-    handStatus: null,
+  handStatus: null,
 
-    cameraBtn: null,
-    pauseBtn: null,
-    resetBtn: null,
+  sceneBtn: null,
+  cameraBtn: null,
+  pauseBtn: null,
+  resetBtn: null,
 
-    cameraFeed: null,
-    
-    sceneBtn: null
-  },
+  cameraFeed: null
+},
 
   mediaPipe: {
     hands: null,
     camera: null
   }
-  
-  export function setScene(sceneName) {
+
+};
+
+export function setScene(sceneName) {
   state.scene.current = sceneName;
   state.scene.transition = 1;
   state.scene.lastChangeAt = Date.now();
 }
-};
