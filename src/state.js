@@ -1,4 +1,4 @@
-export const state = {
+ export const state = {
   canvas: null,
   ctx: null,
 
@@ -54,6 +54,18 @@ mind: {
     lastInteractionAt: 0,
     revealing: false
   },
+
+  memory: {
+  firstSeenAt: Date.now(),
+  totalVisits: 0,
+  totalInteractionTime: 0,
+  totalTouches: 0,
+  totalGravityWaves: 0,
+  favouriteShape: "dormant",
+  favouriteMode: "calm",
+  discoveredShapes: ["dormant"],
+  lastVisitAt: Date.now()
+},
 
   interface: {
     collapsed: false,
@@ -160,4 +172,31 @@ function updateMindMood() {
 
 function clamp01(value) {
   return Math.max(0, Math.min(1, value));
+}
+
+export function saveArtifactMemory() {
+  try {
+    localStorage.setItem(
+      "artifact-memory",
+      JSON.stringify(state.memory)
+    );
+  } catch (err) {
+    console.warn(err);
+  }
+}
+
+export function loadArtifactMemory() {
+  try {
+    const saved =
+      localStorage.getItem("artifact-memory");
+
+    if (!saved) return;
+
+    Object.assign(
+      state.memory,
+      JSON.parse(saved)
+    );
+  } catch (err) {
+    console.warn(err);
+  }
 }
