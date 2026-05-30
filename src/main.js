@@ -21,6 +21,8 @@ function cacheDomElements() {
   state.ui.resetBtn = document.getElementById("resetBtn");
 
   state.ui.cameraFeed = document.getElementById("cameraFeed");
+  
+  state.ui.sceneBtn = document.getElementById("sceneBtn");
 }
 
 function setupCanvas() {
