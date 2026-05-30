@@ -709,12 +709,12 @@ export function updateParticlePhysics(particle, index) {
     state.presence.stillness * 0.004;
 
   particle.vx *= CONFIG.physics.drag * gravityPhysics.drag;
-  particle.vy *= CONFIG.physics.drag * gravityPhysics.drag;
+particle.vy *= CONFIG.physics.drag * gravityPhysics.drag;
 
-  applyAntiStallDrift(particle, index);
+applyAntiStallDrift(particle, index);
 
-  particle.x += particle.vx;
-  particle.y += particle.vy;
+particle.x += particle.vx;
+particle.y += particle.vy;
 
   const padding = CONFIG.particles.respawnPadding;
 
