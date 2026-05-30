@@ -102,6 +102,10 @@ function getGravityModePhysics() {
 }
 
 function getRolePhysics(particle) {
+  if (particle.shapeLane === "primary") {
+  return { pull: 1.45, orbit: 0.72, pointer: 0.55 };
+}
+  
   if (particle.role === "core") {
     return { pull: 1.18, orbit: 0.78, pointer: 0.72 };
   }
@@ -467,6 +471,15 @@ function applyInfinityCorePhysics(particle, index) {
   const stillnessReveal = 1 + state.presence.stillness * 0.18;
   const pathVariance = 0.82 + particle.pathBias * 0.28;
 
+  const shapeAuthority =
+  particle.shapeLane === "primary"
+    ? 1.85
+    : particle.shapeLane === "secondary"
+      ? 1.35
+      : particle.shapeLane === "accent"
+        ? 1.55
+        : 1;
+
   const pull =
     target.pull *
     particle.layerPull *
@@ -476,7 +489,8 @@ function applyInfinityCorePhysics(particle, index) {
     stillnessReveal *
     scenePhysics.pull *
     gravityPhysics.pull *
-    rolePhysics.pull;
+    rolePhysics.pull *
+    shapeAuthority;
 
   particle.vx += nx * pull;
   particle.vy += ny * pull;
@@ -678,8 +692,10 @@ export function updateParticlePhysics(particle, index) {
 
   applyCoreGalaxyPhysics(particle);
   applyInfinityCorePhysics(particle, index);
+  if (particle.shapeLane !== "primary") {
   applyStructurePhysics(particle, index);
   applyMassAnchorPhysics(particle);
+}
   applyPointerPhysics(particle);
 
   particle.pulse +=
