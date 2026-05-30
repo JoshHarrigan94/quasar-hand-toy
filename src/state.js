@@ -64,7 +64,12 @@ mind: {
   favouriteShape: "dormant",
   favouriteMode: "calm",
   discoveredShapes: ["dormant"],
-  lastVisitAt: Date.now()
+  lastVisitAt: Date.now(),
+
+  bond: 0,
+  age: 0,
+  temperament: "unknown",
+  dominantPattern: "unformed"
 },
 
   interface: {
@@ -199,4 +204,36 @@ export function loadArtifactMemory() {
   } catch (err) {
     console.warn(err);
   }
+}
+
+export function updateDerivedMemory() {
+  const memory = state.memory;
+
+  memory.age = Math.min(
+    1,
+    memory.totalInteractionTime / 1800
+  );
+
+  memory.bond = Math.min(
+    1,
+    memory.totalVisits * 0.04 +
+      memory.totalTouches * 0.0008 +
+      memory.totalInteractionTime * 0.00015
+  );
+
+  if (memory.totalGravityWaves > memory.totalTouches * 0.35) {
+    memory.temperament = "wary";
+  } else if (memory.favouriteMode === "calm") {
+    memory.temperament = "settled";
+  } else if (memory.favouriteMode === "spin") {
+    memory.temperament = "restless";
+  } else if (memory.favouriteMode === "pull") {
+    memory.temperament = "inward";
+  } else if (memory.favouriteMode === "push") {
+    memory.temperament = "expansive";
+  } else {
+    memory.temperament = "curious";
+  }
+
+  memory.dominantPattern = memory.favouriteShape || "unformed";
 }
