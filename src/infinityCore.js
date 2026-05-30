@@ -43,8 +43,12 @@ export function assignGravityPath(index, total) {
 }
 
 export function getInfinityCoreTarget(particle, index = 0) {
+  if (state.scene?.current === "saturn") {
+  return getSaturnTarget(particle, index);
+}
+  
   const path = particle.gravityPath || GRAVITY_PATHS.WELL;
-
+  
   if (path === GRAVITY_PATHS.WELL) return getWellTarget(particle, index);
   if (path === GRAVITY_PATHS.TORUS) return getTorusTarget(particle, index);
   if (path === GRAVITY_PATHS.INFINITY) return getInfinityTarget(particle, index);
@@ -240,6 +244,44 @@ function getParabolaTarget(particle, index) {
     orbit: 0.0024,
     drag: 0.998,
     path: GRAVITY_PATHS.PARABOLA
+  };
+}
+
+function getSaturnTarget(particle, index) {
+  const { cx, cy, unit, pathBand, phase, scale, layerScale } =
+    getBaseValues(particle, index);
+
+  const ringRadius =
+    unit *
+    scale *
+    layerScale *
+    (0.18 + pathBand * 0.22);
+
+  const ringThickness =
+    unit *
+    scale *
+    (0.006 + pathBand * 0.025);
+
+  const ringPhase = phase * 0.22;
+  const tubePhase = phase * 1.1 + pathBand * Math.PI * 2;
+
+  const x =
+    cx +
+    Math.cos(ringPhase) *
+      (ringRadius + Math.cos(tubePhase) * ringThickness);
+
+  const y =
+    cy +
+    Math.sin(ringPhase) *
+      (ringRadius * 0.24 + Math.sin(tubePhase) * ringThickness);
+
+  return {
+    x,
+    y,
+    pull: 0.0074,
+    orbit: 0.0052,
+    drag: 0.9975,
+    path: "saturn"
   };
 }
 
