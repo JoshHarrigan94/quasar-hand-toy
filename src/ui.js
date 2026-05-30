@@ -29,6 +29,7 @@ export function updateArtifactStatus() {
   const sceneCopy = {
   dormant: "Dormant Core",
   saturn: "Saturn Ring",
+  cube: "Cube Well",
   reveal: "Revealing Geometry",
   disturbed: "Disturbed Field"
 };
@@ -237,7 +238,7 @@ export function initialiseUiText() {
 }
 
 export function cycleScene() {
-  const order = ["dormant", "saturn", "reveal", "disturbed"];
+  const order = ["dormant", "saturn", "cube", "reveal", "disturbed"];
   const currentIndex = order.indexOf(state.scene.current);
   const nextScene = order[(currentIndex + 1) % order.length];
 
@@ -272,10 +273,12 @@ export function cycleGravityMode() {
   state.gravityMode = nextMode;
 
   const labels = {
-    fragile: "Gravity: Fragile",
-    calm: "Gravity: Calm",
-    dense: "Gravity: Dense"
-  };
+  dormant: "Dormant Core",
+  saturn: "Saturn Ring",
+  cube: "Cube Well",
+  reveal: "Revealing Geometry",
+  disturbed: "Disturbed Field"
+};
 
   if (state.ui.gravityBtn) {
     state.ui.gravityBtn.textContent = labels[nextMode];
