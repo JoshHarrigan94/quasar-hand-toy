@@ -197,7 +197,7 @@ function getSaturnRail(particle, index) {
   const { cx, cy, unit, scale, phase, band, lane, laneOffset, laneScale } =
     getBaseValues(particle, index);
 
-  if (lane === "core") return getCoreWell(particle, index);
+  if (lane === "core") return getAtmosphere(particle, index);
 
   const baseRadius =
     unit *
@@ -247,7 +247,7 @@ function getCubeRail(particle, index) {
   const { cx, cy, unit, scale, phase, band, lane, laneOffset, laneScale } =
     getBaseValues(particle, index);
 
-  if (lane === "core") return getCoreWell(particle, index);
+  if (lane === "core") return getAtmosphere(particle, index);
 
   const size =
     unit *
@@ -305,7 +305,7 @@ function getWaveRail(particle, index) {
   const { cx, cy, unit, scale, phase, band, lane, laneOffset } =
     getBaseValues(particle, index);
 
-  if (lane === "core") return getCoreWell(particle, index);
+  if (lane === "core") return getAtmosphere(particle, index);
 
   const width =
     unit *
@@ -351,7 +351,7 @@ function getInfinityRail(particle, index) {
   const { cx, cy, unit, scale, phase, band, lane, laneOffset, laneScale } =
     getBaseValues(particle, index);
 
-  if (lane === "core") return getCoreWell(particle, index);
+ if (lane === "core") return getAtmosphere(particle, index);
 
   const size =
     unit *
@@ -386,7 +386,7 @@ function getHelixRail(particle, index) {
   const { cx, cy, unit, scale, phase, band, lane, laneOffset } =
     getBaseValues(particle, index);
 
-  if (lane === "core") return getCoreWell(particle, index);
+ if (lane === "core") return getAtmosphere(particle, index);
 
   const height =
     unit *
@@ -428,7 +428,7 @@ function getGalaxyRail(particle, index) {
   const { cx, cy, unit, scale, phase, band, lane, laneScale } =
     getBaseValues(particle, index);
 
-  if (lane === "core") return getCoreWell(particle, index);
+  if (lane === "core") return getAtmosphere(particle, index);
 
   const armCount = 3;
   const arm = Math.floor((particle.pathBias || 0) * armCount);
@@ -473,7 +473,7 @@ function getOrbitalRail(particle, index) {
   const { cx, cy, unit, scale, phase, band, lane, laneOffset } =
     getBaseValues(particle, index);
 
-  if (lane === "core") return getCoreWell(particle, index);
+  if (lane === "core") return getAtmosphere(particle, index);
 
   const orbitIndex =
     lane === "primary"
@@ -519,7 +519,7 @@ function getEyeRail(particle, index) {
   const { cx, cy, unit, scale, phase, band, lane, laneOffset, laneScale } =
     getBaseValues(particle, index);
 
-  if (lane === "core") return getCoreWell(particle, index);
+  if (lane === "core") return getAtmosphere(particle, index);
 
   const t = phase * 0.12 + particle.pathBias * Math.PI * 2;
 
@@ -580,7 +580,7 @@ function getFlowerRail(particle, index) {
   const { cx, cy, unit, scale, phase, band, lane, laneOffset } =
     getBaseValues(particle, index);
 
-  if (lane === "core") return getCoreWell(particle, index);
+  if (lane === "core") return getAtmosphere(particle, index);
 
   const petals = 6;
   const t = phase * 0.12 + particle.pathBias * Math.PI * 2;
