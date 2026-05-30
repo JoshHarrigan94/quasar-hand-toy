@@ -1,4 +1,4 @@
-import { state } from "./state.js";
+import { state, loadArtifactMemory, saveArtifactMemory } from "./state.js";
 import { CONFIG } from "./config.js";
 import { createParticles } from "./particles.js";
 import { renderFrame, advanceHue } from "./render.js";
@@ -69,6 +69,11 @@ function loop() {
 }
 
 function startApplication() {
+  loadArtifactMemory();
+
+  state.memory.totalVisits += 1;
+  state.memory.lastVisitAt = Date.now();
+
   cacheDomElements();
   setupCanvas();
   resizeCanvas();
@@ -77,6 +82,8 @@ function startApplication() {
   initialiseUiText();
   bindUiControls({ onCameraStart: startCamera });
   bindInputControls();
+
+    saveArtifactMemory();
 
   console.log("∞ Infinity Core Started");
   console.log(state);
