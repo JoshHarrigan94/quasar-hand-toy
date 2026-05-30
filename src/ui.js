@@ -90,6 +90,7 @@ export function updateEnergyUI() {
   }
 
   updateArtifactStatus();
+  updateMemoryUI();
 }
 
 export function resetField() {
@@ -225,13 +226,32 @@ export function markHandLost() {
   setGesture("Searching...");
 }
 
+export function updateMemoryUI() {
+  if (!state.ui.memoryText || !state.memory) return;
+
+  const memory = state.memory;
+
+  let bondLabel = "Unfamiliar";
+
+  if (memory.bond > 0.75) {
+    bondLabel = "Attuned";
+  } else if (memory.bond > 0.45) {
+    bondLabel = "Familiar";
+  } else if (memory.bond > 0.18) {
+    bondLabel = "Noticing";
+  }
+
+  state.ui.memoryText.textContent =
+    `${bondLabel} · ${memory.temperament}`;
+}
+
 export function initialiseUiText() {
   updateArtifactStatus();
 
   if (state.ui.gestureText) {
     state.ui.gestureText.textContent = state.lastGesture;
   }
-
+  updateMemoryUI();
   updateEnergyUI();
 
   if (state.ui.handStatus) {
