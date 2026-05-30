@@ -7,6 +7,68 @@ import {
 } from "./cosmicStructures.js";
 import { getInfinityCoreTarget } from "./infinityCore.js";
 
+function getScenePhysics() {
+  const scene = state.scene?.current || "dormant";
+
+  if (scene === "saturn") {
+    return {
+      pull: 1.28,
+      orbit: 0.92,
+      stillnessGain: 1,
+      disturbance: 0.78,
+      pointer: 0.9
+    };
+  }
+
+  if (scene === "cube") {
+    return {
+      pull: 1.34,
+      orbit: 0.72,
+      stillnessGain: 1.15,
+      disturbance: 0.68,
+      pointer: 0.82
+    };
+  }
+
+  if (scene === "wave") {
+    return {
+      pull: 0.92,
+      orbit: 1.04,
+      stillnessGain: 1.2,
+      disturbance: 0.78,
+      pointer: 0.86
+    };
+  }
+
+  if (scene === "reveal") {
+    return {
+      pull: 1.16,
+      orbit: 1.08,
+      stillnessGain: 1.45,
+      disturbance: 0.82,
+      pointer: 0.9
+    };
+  }
+
+  if (scene === "disturbed") {
+    return {
+      pull: 0.84,
+      orbit: 1.34,
+      stillnessGain: 0.72,
+      disturbance: 1.35,
+      pointer: 1.1
+    };
+  }
+
+  return {
+    pull: 1,
+    orbit: 0.92,
+    stillnessGain: 1,
+    disturbance: 0.72,
+    pointer: 1
+  };
+}
+
 function getGravityModePhysics() {
   const mode = state.gravityMode || "calm";
 
@@ -39,33 +101,28 @@ function getGravityModePhysics() {
   };
 }
 
-function getScenePhysics() {
-  const scene = state.scene?.current || "dormant";
-
-  if (scene === "reveal") {
-    return {
-      pull: 1.12,
-      orbit: 1.08,
-      stillnessGain: 1.45,
-      disturbance: 0.82
-    };
+function getRolePhysics(particle) {
+  if (particle.role === "core") {
+    return { pull: 1.18, orbit: 0.78, pointer: 0.72 };
   }
 
-  if (scene === "disturbed") {
-    return {
-      pull: 0.92,
-      orbit: 1.22,
-      stillnessGain: 0.72,
-      disturbance: 1.35
-    };
+  if (particle.role === "structure") {
+    return { pull: 1.34, orbit: 0.92, pointer: 0.9 };
   }
 
-  return {
-    pull: 1,
-    orbit: 0.92,
-    stillnessGain: 1,
-    disturbance: 0.72
-  };
+  if (particle.role === "field") {
+    return { pull: 1, orbit: 1, pointer: 1 };
+  }
+
+  if (particle.role === "veil") {
+    return { pull: 0.72, orbit: 1.12, pointer: 1.08 };
+  }
+
+  if (particle.role === "accent") {
+    return { pull: 1.42, orbit: 1.18, pointer: 1.16 };
+  }
+
+  return { pull: 1, orbit: 1, pointer: 1 };
 }
 
 export function markInteraction() {
@@ -76,19 +133,17 @@ export function markInteraction() {
 
 export function updatePresenceState() {
   const now = Date.now();
+  const scenePhysics = getScenePhysics();
   const timeSinceInteraction = now - state.presence.lastInteractionAt;
 
   state.presence.breathPhase += 0.0022;
   state.presence.breath = (Math.sin(state.presence.breathPhase) + 1) / 2;
 
   if (timeSinceInteraction > 1600 && !state.pointer.down) {
-  const scenePhysics = getScenePhysics();
-  const gravityPhysics = getGravityModePhysics();
-
-state.presence.stillness = Math.min(
-  1,
-  state.presence.stillness + 0.0042 * scenePhysics.stillnessGain
-);
+    state.presence.stillness = Math.min(
+      1,
+      state.presence.stillness + 0.0042 * scenePhysics.stillnessGain
+    );
   } else {
     state.presence.stillness *= 0.985;
   }
@@ -101,7 +156,6 @@ state.presence.stillness = Math.min(
   ) {
     state.presence.presencePulse = 1;
     state.presence.lastPresenceEventAt = now;
-
     pulseAt(state.width / 2, state.height / 2, 0.42);
   }
 
@@ -181,18 +235,21 @@ export function pulseAt(x, y, strength = 1) {
 }
 
 export function gravityWaveAt(x, y, strength = 1) {
+  const scenePhysics = getScenePhysics();
+  const gravityPhysics = getGravityModePhysics();
+
   state.shockwaves.push({
     x,
     y,
     radius: 12,
-    alpha: 0.34 * strength,
+    alpha: 0.34 * strength * scenePhysics.disturbance,
     speed: 9 + strength * 6,
     type: "gravity-wave"
   });
 
   wakeArtifact({
     awake: 0.075 * strength,
-    disturbance: 0.095 * strength,
+    disturbance: 0.095 * strength * scenePhysics.disturbance,
     pressure: 0.025 * strength
   });
 
@@ -201,24 +258,29 @@ export function gravityWaveAt(x, y, strength = 1) {
   for (const particle of state.particles) {
     const dx = particle.x - x;
     const dy = particle.y - y;
-
     const dist = Math.hypot(dx, dy) || 1;
 
     if (dist > waveRadius) continue;
 
+    const rolePhysics = getRolePhysics(particle);
     const influence = 1 - dist / waveRadius;
 
     const nx = dx / dist;
     const ny = dy / dist;
-
     const tx = -ny;
     const ty = nx;
 
-    particle.vx += nx * influence * strength * 0.95 * particle.depth;
-particle.vy += ny * influence * strength * 0.95 * particle.depth;
+    const waveForce =
+      strength *
+      gravityPhysics.wave *
+      scenePhysics.disturbance *
+      rolePhysics.pointer;
 
-particle.vx += tx * influence * strength * 0.5;
-particle.vy += ty * influence * strength * 0.5;
+    particle.vx += nx * influence * waveForce * 0.95 * particle.depth;
+    particle.vy += ny * influence * waveForce * 0.95 * particle.depth;
+
+    particle.vx += tx * influence * waveForce * 0.5;
+    particle.vy += ty * influence * waveForce * 0.5;
   }
 }
 
@@ -248,8 +310,8 @@ export function explode(x = state.width / 2, y = state.height / 2, power = 10) {
     const dist = Math.hypot(dx, dy) || 1;
     const force = Math.min(power, 520 / dist);
 
-    particle.vx += (dx / dist) * force * (0.28 + particle.depth);
-    particle.vy += (dy / dist) * force * (0.28 + particle.depth);
+    particle.vx += (dx / dist) * force * (0.24 + particle.depth);
+    particle.vy += (dy / dist) * force * (0.24 + particle.depth);
   }
 }
 
@@ -274,8 +336,8 @@ export function implode(x = state.width / 2, y = state.height / 2, power = 9) {
     const dist = Math.hypot(dx, dy) || 1;
     const force = Math.min(power, 520 / dist);
 
-    particle.vx += (dx / dist) * force * (0.24 + particle.depth);
-    particle.vy += (dy / dist) * force * (0.24 + particle.depth);
+    particle.vx += (dx / dist) * force * (0.22 + particle.depth);
+    particle.vy += (dy / dist) * force * (0.22 + particle.depth);
   }
 }
 
@@ -327,12 +389,10 @@ function applyCoreGalaxyPhysics(particle) {
 
   const dx = cx - particle.x;
   const dy = cy - particle.y;
-
   const dist = Math.hypot(dx, dy) || 1;
 
   const nx = dx / dist;
   const ny = dy / dist;
-
   const tx = -ny;
   const ty = nx;
 
@@ -383,6 +443,10 @@ function applyInfinityCorePhysics(particle, index) {
   const target = getInfinityCoreTarget(particle, index);
   if (!target) return;
 
+  const scenePhysics = getScenePhysics();
+  const gravityPhysics = getGravityModePhysics();
+  const rolePhysics = getRolePhysics(particle);
+
   const dx = target.x - particle.x;
   const dy = target.y - particle.y;
 
@@ -401,42 +465,33 @@ function applyInfinityCorePhysics(particle, index) {
 
   const opennessBoost = 1 + Math.max(0, state.artifact.openness) * 0.16;
   const stillnessReveal = 1 + state.presence.stillness * 0.18;
-
   const pathVariance = 0.82 + particle.pathBias * 0.28;
 
-  const scenePhysics = getScenePhysics();
-const gravityPhysics = getGravityModePhysics();
-
   const pull =
-  target.pull *
-  particle.layerPull *
-  particle.depth *
-  pressureBoost *
-  pathVariance *
-  stillnessReveal *
-  gravityPhysics.pull *
-  scenePhysics.pull;
+    target.pull *
+    particle.layerPull *
+    particle.depth *
+    pressureBoost *
+    pathVariance *
+    stillnessReveal *
+    scenePhysics.pull *
+    gravityPhysics.pull *
+    rolePhysics.pull;
 
   particle.vx += nx * pull;
   particle.vy += ny * pull;
 
-  particle.vx +=
-  tx *
-  target.orbit *
-  particle.depth *
-  opennessBoost *
-  pathVariance *
-  scenePhysics.orbit *
-  gravityPhysics.orbit;
+  const orbit =
+    target.orbit *
+    particle.depth *
+    opennessBoost *
+    pathVariance *
+    scenePhysics.orbit *
+    gravityPhysics.orbit *
+    rolePhysics.orbit;
 
-particle.vy +=
-  ty *
-  target.orbit *
-  particle.depth *
-  opennessBoost *
-  pathVariance *
-  scenePhysics.orbit *
-  gravityPhysics.orbit;
+  particle.vx += tx * orbit;
+  particle.vy += ty * orbit;
 
   particle.vx *= target.drag;
   particle.vy *= target.drag;
@@ -457,13 +512,13 @@ function applyStructurePhysics(particle, index) {
   const tx = -ny;
   const ty = nx;
 
-  const pull = target.gravity * particle.structurePull * particle.depth * 0.12;
+  const pull = target.gravity * particle.structurePull * particle.depth * 0.08;
 
   particle.vx += nx * pull;
   particle.vy += ny * pull;
 
-  particle.vx += tx * target.orbitStrength * particle.depth * 0.07;
-  particle.vy += ty * target.orbitStrength * particle.depth * 0.07;
+  particle.vx += tx * target.orbitStrength * particle.depth * 0.05;
+  particle.vy += ty * target.orbitStrength * particle.depth * 0.05;
 }
 
 function applyMassAnchorPhysics(particle) {
@@ -491,14 +546,14 @@ function applyMassAnchorPhysics(particle) {
       influence *
       influence *
       anchor.mass *
-      0.0028 *
+      0.0024 *
       particle.depth;
 
     particle.vx += nx * massPull;
     particle.vy += ny * massPull;
 
-    particle.vx += tx * anchor.orbitStrength * influence * 0.1;
-    particle.vy += ty * anchor.orbitStrength * influence * 0.1;
+    particle.vx += tx * anchor.orbitStrength * influence * 0.08;
+    particle.vy += ty * anchor.orbitStrength * influence * 0.08;
   }
 }
 
@@ -507,6 +562,10 @@ function applyPointerPhysics(particle) {
 
   if (!pointer.active) return;
 
+  const scenePhysics = getScenePhysics();
+  const gravityPhysics = getGravityModePhysics();
+  const rolePhysics = getRolePhysics(particle);
+
   const pdx = pointer.x - particle.x;
   const pdy = pointer.y - particle.y;
 
@@ -514,7 +573,7 @@ function applyPointerPhysics(particle) {
 
   const modeRadius =
     state.mode === "spin"
-      ? CONFIG.physics.pointerRadius * 1.85
+      ? CONFIG.physics.pointerRadius * 1.55
       : CONFIG.physics.pointerRadius;
 
   if (pdist > modeRadius) return;
@@ -526,7 +585,10 @@ function applyPointerPhysics(particle) {
     influence *
     (pointer.down ? 1.05 : 0.46) *
     particle.depth *
-    energyScale;
+    energyScale *
+    scenePhysics.pointer *
+    gravityPhysics.pointer *
+    rolePhysics.pointer;
 
   const px = pdx / pdist;
   const py = pdy / pdist;
@@ -539,8 +601,8 @@ function applyPointerPhysics(particle) {
       openness: -0.00014
     });
 
-    particle.vx += px * force * 0.76;
-    particle.vy += py * force * 0.76;
+    particle.vx += px * force * 0.72;
+    particle.vy += py * force * 0.72;
   }
 
   if (state.mode === "push") {
@@ -551,8 +613,8 @@ function applyPointerPhysics(particle) {
       openness: 0.00048
     });
 
-    particle.vx -= px * force * 0.82;
-    particle.vy -= py * force * 0.82;
+    particle.vx -= px * force * 0.78;
+    particle.vy -= py * force * 0.78;
   }
 
   if (state.mode === "spin") {
@@ -563,9 +625,9 @@ function applyPointerPhysics(particle) {
     });
 
     const rotateForce =
-  force *
-  0.46 *
-  (0.5 + influence * 0.5);
+      force *
+      0.46 *
+      (0.5 + influence * 0.5);
 
     particle.vx += -py * rotateForce;
     particle.vy += px * rotateForce;
@@ -578,10 +640,10 @@ function applyPointerPhysics(particle) {
       pressure: 0.00014
     });
 
-    particle.vx += -py * force * 0.68;
-    particle.vy += px * force * 0.68;
-    particle.vx -= px * force * 0.5;
-    particle.vy -= py * force * 0.5;
+    particle.vx += -py * force * 0.56;
+    particle.vy += px * force * 0.56;
+    particle.vx -= px * force * 0.42;
+    particle.vy -= py * force * 0.42;
   }
 
   if (state.mode === "calm") {
@@ -591,6 +653,8 @@ function applyPointerPhysics(particle) {
 }
 
 export function updateParticlePhysics(particle, index) {
+  const gravityPhysics = getGravityModePhysics();
+
   applyCoreGalaxyPhysics(particle);
   applyInfinityCorePhysics(particle, index);
   applyStructurePhysics(particle, index);
@@ -602,10 +666,8 @@ export function updateParticlePhysics(particle, index) {
     state.artifact.awakeLevel * 0.007 +
     state.presence.stillness * 0.004;
 
-  const gravityPhysics = getGravityModePhysics();
-
-particle.vx *= CONFIG.physics.drag * gravityPhysics.drag;
-particle.vy *= CONFIG.physics.drag * gravityPhysics.drag;
+  particle.vx *= CONFIG.physics.drag * gravityPhysics.drag;
+  particle.vy *= CONFIG.physics.drag * gravityPhysics.drag;
 
   particle.x += particle.vx;
   particle.y += particle.vy;
