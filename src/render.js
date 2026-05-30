@@ -34,19 +34,23 @@ function getSceneVisuals() {
 
 function getLaneVisuals(particle) {
   if (particle.shapeLane === "primary") {
-    return { alpha: 1.72, size: 1.04, lightness: 10, trail: 1.25 };
+    return { alpha: 2.35, size: 1.08, lightness: 18, trail: 1.6 };
   }
 
   if (particle.shapeLane === "secondary") {
-    return { alpha: 1.12, size: 0.9, lightness: 3, trail: 0.92 };
+    return { alpha: 1.05, size: 0.82, lightness: 2, trail: 0.75 };
   }
 
   if (particle.shapeLane === "background") {
-    return { alpha: 0.42, size: 0.68, lightness: -10, trail: 0.35 };
+    return { alpha: 0.22, size: 0.52, lightness: -16, trail: 0.18 };
   }
 
   if (particle.shapeLane === "accent") {
-    return { alpha: 1.95, size: 1.12, lightness: 14, trail: 1.45 };
+    return { alpha: 2.8, size: 1.18, lightness: 24, trail: 1.9 };
+  }
+
+  if (particle.shapeLane === "core") {
+    return { alpha: 1.45, size: 1.04, lightness: 8, trail: 0.9 };
   }
 
   return { alpha: 1, size: 1, lightness: 0, trail: 1 };
@@ -57,46 +61,46 @@ function getGeometryVisuals(particle) {
 
   if (scene === "saturn") {
     if (particle.shapeLane === "primary") {
-      return { alpha: 1.45, size: 1.0, lightness: 10, trail: 1.28 };
+      return { alpha: 1.85, size: 1.02, lightness: 18, trail: 1.8 };
     }
 
     if (particle.shapeLane === "core") {
-      return { alpha: 1.2, size: 1.0, lightness: 4, trail: 0.8 };
+      return { alpha: 1.35, size: 1, lightness: 8, trail: 0.7 };
     }
 
-    return { alpha: 0.78, size: 0.82, lightness: -4, trail: 0.55 };
+    return { alpha: 0.48, size: 0.7, lightness: -10, trail: 0.32 };
   }
 
   if (scene === "cube") {
     if (particle.shapeLane === "primary" || particle.shapeLane === "accent") {
-      return { alpha: 1.62, size: 0.92, lightness: 14, trail: 1.18 };
+      return { alpha: 2.1, size: 0.88, lightness: 22, trail: 1.55 };
     }
 
-    return { alpha: 0.72, size: 0.78, lightness: -5, trail: 0.48 };
+    return { alpha: 0.42, size: 0.66, lightness: -12, trail: 0.25 };
   }
 
   if (scene === "wave") {
     if (particle.shapeLane === "primary") {
-      return { alpha: 1.55, size: 0.82, lightness: 12, trail: 1.5 };
+      return { alpha: 1.95, size: 0.72, lightness: 20, trail: 2.1 };
     }
 
     if (particle.shapeLane === "secondary") {
-      return { alpha: 1.0, size: 0.76, lightness: 3, trail: 1.05 };
+      return { alpha: 0.9, size: 0.66, lightness: 4, trail: 1.15 };
     }
 
-    return { alpha: 0.62, size: 0.68, lightness: -6, trail: 0.55 };
+    return { alpha: 0.36, size: 0.58, lightness: -12, trail: 0.32 };
   }
 
   if (scene === "reveal") {
-    if (particle.gravityPath === GRAVITY_PATHS.INFINITY || particle.shapeLane === "primary") {
-      return { alpha: 1.55, size: 0.96, lightness: 12, trail: 1.25 };
+    if (particle.shapeLane === "primary") {
+      return { alpha: 2.0, size: 0.92, lightness: 20, trail: 1.7 };
     }
 
-    return { alpha: 0.82, size: 0.82, lightness: -2, trail: 0.7 };
+    return { alpha: 0.48, size: 0.7, lightness: -8, trail: 0.4 };
   }
 
   if (scene === "disturbed") {
-    return { alpha: 1.12, size: 1.0, lightness: 4, trail: 1.35 };
+    return { alpha: 1.15, size: 0.95, lightness: 5, trail: 1.7 };
   }
 
   return { alpha: 1, size: 1, lightness: 0, trail: 1 };
@@ -172,7 +176,7 @@ function drawStarfield() {
   const stillness = state.presence.stillness;
   const phoneBoost = isSmallScreen() ? 1.35 : 1;
 
-  for (let i = 0; i < 380; i++) {
+  for (let i = 0; i < 260; i++) {
     const seed = i * 99991;
     const x = ((Math.sin(seed) + 1) * 0.5) * state.width;
     const y = ((Math.cos(seed) + 1) * 0.5) * state.height;
