@@ -104,4 +104,10 @@ scene: {
     hands: null,
     camera: null
   }
+  
+  export function setScene(sceneName) {
+  state.scene.current = sceneName;
+  state.scene.transition = 1;
+  state.scene.lastChangeAt = Date.now();
+}
 };
