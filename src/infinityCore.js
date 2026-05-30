@@ -141,9 +141,9 @@ function getDormantRail(particle, index) {
   const { lane } = getBaseValues(particle, index);
 
   if (lane === "core") return getCoreWell(particle, index);
-  if (lane === "primary") return getInfinityRail(particle, index);
-  if (lane === "secondary") return getSaturnRail(particle, index);
-  if (lane === "accent") return getInfinityRail(particle, index);
+  if (lane === "primary") return getDormantSphere(particle, index);
+  if (lane === "secondary") return getDormantSphere(particle, index);
+  if (lane === "accent") return getCoreWell(particle, index);
 
   return getAtmosphere(particle, index);
 }
@@ -165,6 +165,27 @@ function getCoreWell(particle, index) {
     drag: 0.9982,
     path: "well",
     lock: lane === "core" ? 0.9 : 0.6
+  });
+}
+
+function getDormantSphere(particle, index) {
+  const { cx, cy, unit, scale, phase, band, lane, laneScale } =
+    getBaseValues(particle, index);
+
+  const radius =
+    unit *
+    scale *
+    laneScale *
+    (0.08 + band * 0.16);
+
+  return targetResponse({
+    x: cx + Math.cos(phase * 0.28) * radius,
+    y: cy + Math.sin(phase * 0.22) * radius * 0.72,
+    pull: lane === "primary" ? 0.022 : 0.012,
+    orbit: 0.0048,
+    drag: 0.9988,
+    path: "dormant-sphere",
+    lock: lane === "primary" ? 0.95 : 0.65
   });
 }
 
