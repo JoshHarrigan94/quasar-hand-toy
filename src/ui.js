@@ -262,6 +262,27 @@ export function updateCameraButton() {
   state.ui.cameraBtn.classList.toggle("active", state.cameraActive);
 }
 
+export function cycleGravityMode() {
+  const order = ["fragile", "calm", "dense"];
+  const currentIndex = order.indexOf(state.gravityMode || "calm");
+  const nextMode = order[(currentIndex + 1) % order.length];
+
+  state.gravityMode = nextMode;
+
+  const labels = {
+    fragile: "Gravity: Fragile",
+    calm: "Gravity: Calm",
+    dense: "Gravity: Dense"
+  };
+
+  if (state.ui.gravityBtn) {
+    state.ui.gravityBtn.textContent = labels[nextMode];
+  }
+
+  setGesture(labels[nextMode]);
+  noteUiInteraction();
+}
+
 export function bindUiControls({ onCameraStart } = {}) {
   document.querySelectorAll("button[data-mode]").forEach((button) => {
     button.addEventListener("click", () => {
@@ -283,6 +304,12 @@ setGesture(gestureCopy[button.dataset.mode] || "Presence");
   state.ui.sceneBtn.addEventListener("click", () => {
     cycleScene();
     noteUiInteraction();
+  });
+}
+
+if (state.ui.gravityBtn) {
+  state.ui.gravityBtn.addEventListener("click", () => {
+    cycleGravityMode();
   });
 }
 
