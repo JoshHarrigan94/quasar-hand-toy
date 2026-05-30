@@ -9,20 +9,18 @@ export const state = {
   paused: false,
 
   hue: 190,
-
   mode: "pull",
-
   energy: 100,
 
   particles: [],
   shockwaves: [],
   comets: [],
 
-scene: {
-  current: "dormant",
-  transition: 0,
-  lastChangeAt: Date.now()
-},
+  scene: {
+    current: "dormant",
+    transition: 0,
+    lastChangeAt: Date.now()
+  },
 
   artifact: {
     awakeLevel: 0,
@@ -59,53 +57,41 @@ scene: {
   pointer: {
     x: 0,
     y: 0,
-
     prevX: 0,
     prevY: 0,
-
     vx: 0,
     vy: 0,
-
     active: false,
     down: false,
-
     source: "touch"
   },
 
   handState: {
     previousX: 0,
     previousY: 0,
-
     speed: 0,
-
     stillFrames: 0,
-
     lastSwipeAt: 0,
     lastAutoPowerAt: 0
   },
 
   ui: {
-  statusText: null,
-  gestureText: null,
-
-  energyText: null,
-  energyFill: null,
-
-  handStatus: null,
-
-  sceneBtn: null,
-  cameraBtn: null,
-  pauseBtn: null,
-  resetBtn: null,
-
-  cameraFeed: null
-},
+    statusText: null,
+    gestureText: null,
+    energyText: null,
+    energyFill: null,
+    handStatus: null,
+    sceneBtn: null,
+    cameraBtn: null,
+    pauseBtn: null,
+    resetBtn: null,
+    cameraFeed: null
+  },
 
   mediaPipe: {
     hands: null,
     camera: null
   }
-
 };
 
 export function setScene(sceneName) {
