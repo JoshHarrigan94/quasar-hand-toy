@@ -301,9 +301,27 @@ export function markInteraction() {
 function applyDeformationRecovery(particle) {
   if (!particle.deformation) return;
 
-  particle.deformation.x *= 0.94;
-  particle.deformation.y *= 0.94;
-  particle.deformation.strength *= 0.965;
+  const scene = state.scene?.current || "dormant";
+
+const recovery = {
+  saturn: 0.955,
+  cube: 0.965,
+  wave: 0.935,
+  reveal: 0.948,
+  disturbed: 0.92,
+  helix: 0.94,
+  galaxy: 0.93,
+  orbital: 0.95,
+  eye: 0.97,
+  flower: 0.94,
+  dormant: 0.95
+};
+
+const decay = recovery[scene] || 0.945;
+
+particle.deformation.x *= decay;
+particle.deformation.y *= decay;
+particle.deformation.strength *= Math.min(0.985, decay + 0.025);
 
   if (Math.abs(particle.deformation.x) < 0.001) {
     particle.deformation.x = 0;
@@ -798,9 +816,26 @@ memoryPhysics.pointer *
 rolePhysics.pointer;
 
 if (particle.deformation) {
+  const scene = state.scene?.current || "dormant";
+
+  const deformationMultiplier = {
+    saturn: 0.75,
+    cube: 0.55,
+    wave: 1.25,
+    reveal: 0.85,
+    disturbed: 1.45,
+    helix: 1.05,
+    galaxy: 1.2,
+    orbital: 0.8,
+    eye: 0.7,
+    flower: 1.15,
+    dormant: 0.9
+  };
+
   particle.deformation.strength = Math.min(
     1,
-    particle.deformation.strength + influence * 0.035
+    particle.deformation.strength +
+      influence * 0.035 * (deformationMultiplier[scene] || 1)
   );
 
   particle.deformation.lastDisturbedAt = Date.now();
