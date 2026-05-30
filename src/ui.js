@@ -7,6 +7,10 @@ let autoCollapseTimer = null;
 
 export function setMode(nextMode, silent = false) {
   state.mode = nextMode;
+  
+  if (state.memory) {
+  state.memory.favouriteMode = nextMode;
+}
 
   document.querySelectorAll("button[data-mode]").forEach((button) => {
     button.classList.toggle("active", button.dataset.mode === state.mode);
