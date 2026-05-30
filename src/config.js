@@ -1,18 +1,18 @@
 export const CONFIG = {
   particles: {
-    mobileCount: 3200,
-    desktopCount: 5600,
+    mobileCount: 3000,
+    desktopCount: 5400,
     maxDevicePixelRatio: 2,
     respawnPadding: 220,
-    galaxyRadiusFactor: 0.72,
+    galaxyRadiusFactor: 0.66,
     verticalCompression: 0.56
   },
 
   physics: {
-    coreGravity: 0.00062,
-    orbitStrength: 0.0075,
-    drag: 0.994,
-    pointerRadius: 250,
+    coreGravity: 0.00058,
+    orbitStrength: 0.007,
+    drag: 0.9945,
+    pointerRadius: 255,
     flingRadius: 320
   },
 
@@ -23,21 +23,21 @@ export const CONFIG = {
     pressureDecay: 0.986,
     opennessDecay: 0.988,
     calmDecayMultiplier: 0.965,
-    sleepDelayMs: 2400
+    sleepDelayMs: 2200
   },
 
   structures: {
     enabled: true,
-    structurePullMultiplier: 0.55,
-    orbitRevealStrength: 0.2,
-    guideOpacity: 0.2
+    structurePullMultiplier: 0.52,
+    orbitRevealStrength: 0.18,
+    guideOpacity: 0.16
   },
 
   energy: {
     max: 100,
     calmRecoveryRate: 0.12,
     normalRecoveryRate: 0.045,
-    touchDrainRate: 0.03,
+    touchDrainRate: 0.028,
     explodeCost: 12,
     implodeCost: 10,
     flingCost: 5
@@ -59,15 +59,15 @@ export const CONFIG = {
     swipeCooldownMs: 650,
     smashCooldownMs: 1100,
     stillSpeed: 2.4,
-    stillFrames: 42,
+    stillFrames: 38,
     fistWristToIndex: 0.28
   },
 
   visuals: {
     baseHue: 190,
-    cometSpawnChance: 0.003,
+    cometSpawnChance: 0.002,
     trailFade: 0.08,
-    stormHueSpeed: 0.18,
-    normalHueSpeed: 0.035
+    stormHueSpeed: 0.16,
+    normalHueSpeed: 0.032
   }
 };
