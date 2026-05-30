@@ -182,7 +182,7 @@ export function noteUiInteraction() {
 export function markHandTrackingActive(message = "Searching for hand...") {
   if (state.ui.cameraBtn) {
     state.ui.cameraBtn.classList.add("active");
-    state.ui.cameraBtn.textContent = "Camera On";
+    state.ui.cameraBtn.textContent = "Stop Camera";
   }
 
   if (state.ui.cameraFeed) {
@@ -252,6 +252,16 @@ export function cycleScene() {
   updateArtifactStatus();
 }
 
+export function updateCameraButton() {
+  if (!state.ui.cameraBtn) return;
+
+  state.ui.cameraBtn.textContent = state.cameraActive
+    ? "Stop Camera"
+    : "Start Camera";
+
+  state.ui.cameraBtn.classList.toggle("active", state.cameraActive);
+}
+
 export function bindUiControls({ onCameraStart } = {}) {
   document.querySelectorAll("button[data-mode]").forEach((button) => {
     button.addEventListener("click", () => {
@@ -285,11 +295,17 @@ setGesture(gestureCopy[button.dataset.mode] || "Presence");
   }
 
   if (state.ui.cameraBtn && onCameraStart) {
-    state.ui.cameraBtn.addEventListener("click", () => {
-      onCameraStart();
-      noteUiInteraction();
-    });
-  }
+  state.ui.cameraBtn.addEventListener("click", async () => {
+    if (state.cameraActive && window.stopInfinityCamera) {
+      await window.stopInfinityCamera();
+    } else {
+      await onCameraStart();
+    }
+
+    updateCameraButton();
+    noteUiInteraction();
+  });
+}
 
   const uiToggle = document.getElementById("uiToggle");
 
