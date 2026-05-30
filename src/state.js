@@ -97,7 +97,9 @@ scene: {
     pauseBtn: null,
     resetBtn: null,
 
-    cameraFeed: null
+    cameraFeed: null,
+    
+    sceneBtn: null
   },
 
   mediaPipe: {
